@@ -1,0 +1,35 @@
+@mixin flex(
+  $direction: row,
+  $align-items: center,
+  $justify-content: center,
+  $gap: null
+) {
+  display: flex;
+  align-items: $align-items;
+  justify-content: $justify-content;
+  flex-direction: $direction;
+  gap: $gap;
+}
+
+@function rem($size) {
+  @return calc($size / 16px * 1rem);
+}
+
+// 390px 기준 비율로 줄어들되, 디자인 크기보다 커지지 않음
+@function vw($size) {
+  @return min(calc($size / 390px * 100vw), $size);
+}
+
+// 844px 기준 비율로 줄어들되, 디자인 크기보다 커지지 않음
+@function vh($size) {
+  @return min(calc($size / 844px * 100dvh), $size);
+}
+
+@mixin hoverEvent($bright: 0.9) {
+  filter: brightness(1);
+  transition: filter 0.3s ease;
+  &:hover {
+    filter: brightness($bright);
+    cursor: pointer;
+  }
+}
