@@ -2,7 +2,15 @@
 
 실시간 회의 페이스메이커 **칼퇴**의 웹 클라이언트입니다.
 
-> 프론트 스택(프레임워크, 패키지 매니저)이 정해지면 프로젝트를 초기화하고, 이 README와 CI(`.github/workflows/ci.yml`)를 채워 주세요.
+## CI
+
+CI(`.github/workflows/ci.yml`)가 PR마다 아래를 실행합니다. 올리기 전에 로컬에서 먼저 돌려 주세요.
+
+```
+npm run lint
+npm run format:check   # 고치려면 npm run format
+npm run build
+```
 
 ## 백엔드 연동
 
