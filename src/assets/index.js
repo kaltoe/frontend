@@ -5,10 +5,12 @@ import enter from '@/assets/before/enter.svg';
 import featureSummary from '@/assets/before/feature-summary.svg';
 import featureTime from '@/assets/before/feature-time.svg';
 import link from '@/assets/before/link.svg';
+import linkGray from '@/assets/before/link-gray.svg';
 import loading from '@/assets/before/loading.svg';
 import logoRun from '@/assets/before/logo-run.svg';
 import plusGray from '@/assets/before/plus-gray.svg';
 import plusWhite from '@/assets/before/plus-white.svg';
+import runWhite from '@/assets/before/run-white.svg';
 import trialDotFilled from '@/assets/before/trial-dot-filled.svg';
 import trialDotOutline from '@/assets/before/trial-dot-outline.svg';
 import trialLine from '@/assets/before/trial-line.svg';
@@ -20,10 +22,12 @@ export {
   featureSummary,
   featureTime,
   link,
+  linkGray,
   loading,
   logoRun,
   plusGray,
   plusWhite,
+  runWhite,
   trialDotFilled,
   trialDotOutline,
   trialLine,

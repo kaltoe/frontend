@@ -1,0 +1,38 @@
+@use '@/styles/variables' as *;
+@use '@/styles/function' as *;
+
+.page {
+  @include flex(column, stretch, flex-start);
+  position: relative;
+  min-height: 100dvh;
+  background-color: $color-gray-100;
+}
+
+.message {
+  @include flex(column, center, center, 12px);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  padding: 0 20px;
+  transform: translate(-50%, -50%);
+}
+
+.text {
+  @include flex(column, center, flex-start, 8px);
+  text-align: center;
+  line-height: 1.22;
+  letter-spacing: -0.03em;
+}
+
+.title {
+  font-size: $font-size-18;
+  font-weight: $font-weight-bold;
+  color: $color-gray-900;
+}
+
+.description {
+  font-size: $font-size-14;
+  color: $color-gray-500;
+  word-break: keep-all;
+}
