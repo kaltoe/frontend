@@ -7,13 +7,14 @@ import {
   featureTime,
   link,
   loading,
-  logoRun,
   plusGray,
   plusWhite,
   trialDotFilled,
   trialDotOutline,
   trialLine,
 } from '@/assets';
+import { BottomBar } from '@/components/common/BottomBar/BottomBar';
+import { Header } from '@/components/common/Header/Header';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { extractMeetingCode } from './extractMeetingCode';
 import styles from './MainPage.module.scss';
@@ -30,7 +31,6 @@ export const MainPage = () => {
   const isOnline = useOnlineStatus();
   const isLoading = !isOnline;
   const [codeInput, setCodeInput] = useState('');
-  const [isCodeInvalid, setIsCodeInvalid] = useState(false);
 
   const handleCreateMeeting = () => {
     navigate('/setup');
@@ -38,9 +38,11 @@ export const MainPage = () => {
 
   const handleJoin = (event) => {
     event.preventDefault();
+    if (!codeInput.trim()) return;
+
     const code = extractMeetingCode(codeInput);
     if (!code) {
-      setIsCodeInvalid(true);
+      navigate('/invalid-link');
       return;
     }
     navigate(`/m/${code}`);
@@ -48,12 +50,7 @@ export const MainPage = () => {
 
   return (
     <div className={styles.page}>
-      <header className={styles.header}>
-        <div className={styles.logo}>
-          <img src={logoRun} alt="" />
-          <span className={styles.logoText}>칼퇴</span>
-        </div>
-      </header>
+      <Header />
 
       {isLoading ? (
         <div className={styles.loading} role="status">
@@ -138,11 +135,7 @@ export const MainPage = () => {
                     className={styles.joinInput}
                     type="text"
                     value={codeInput}
-                    onChange={(event) => {
-                      setCodeInput(event.target.value);
-                      setIsCodeInvalid(false);
-                    }}
-                    aria-invalid={isCodeInvalid}
+                    onChange={(event) => setCodeInput(event.target.value)}
                     placeholder="회의 링크 또는 코드 입력"
                     aria-label="회의 링크 또는 코드"
                     autoComplete="off"
@@ -159,31 +152,18 @@ export const MainPage = () => {
                 </button>
               </form>
             </div>
-            {isCodeInvalid ? (
-              <p
-                className={`${styles.joinExample} ${styles.joinError}`}
-                role="alert"
-              >
-                회의 링크나 6자리 코드를 확인해주세요.
-              </p>
-            ) : (
-              <p className={styles.joinExample}>예: K7Q2MX</p>
-            )}
+            <p className={styles.joinExample}>예: K7Q2MX</p>
           </section>
         </main>
       )}
 
-      <footer className={styles.bottomBar}>
-        <button
-          className={styles.createButton}
-          type="button"
-          onClick={handleCreateMeeting}
-          disabled={isLoading}
-        >
-          <img src={isLoading ? plusGray : plusWhite} alt="" />
-          <span className={styles.createButtonText}>회의 만들기</span>
-        </button>
-      </footer>
+      <BottomBar
+        icon={isLoading ? plusGray : plusWhite}
+        onClick={handleCreateMeeting}
+        disabled={isLoading}
+      >
+        회의 만들기
+      </BottomBar>
     </div>
   );
 };
