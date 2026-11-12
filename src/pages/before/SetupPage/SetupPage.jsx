@@ -3,6 +3,7 @@ import { playGray } from '@/assets';
 import { BackHeader } from '@/components/common/BackHeader/BackHeader';
 import { BottomBar } from '@/components/common/BottomBar/BottomBar';
 import { FieldLabel } from './components/FieldLabel';
+import { TargetTimeSlider } from './components/TargetTimeSlider';
 import {
   MEETING_TYPES,
   PARTICIPANTS_MAX,
@@ -15,6 +16,7 @@ export const SetupPage = () => {
   const [title, setTitle] = useState('');
   const [meetingType, setMeetingType] = useState(MEETING_TYPES[0].value);
   const [participants, setParticipants] = useState('');
+  const [targetTime, setTargetTime] = useState(null);
 
   const isTitleTooLong = title.length > TITLE_MAX_LENGTH;
 
@@ -114,6 +116,8 @@ export const SetupPage = () => {
               </p>
             )}
           </section>
+
+          <TargetTimeSlider value={targetTime} onChange={setTargetTime} />
         </div>
       </main>
 
