@@ -18,10 +18,12 @@ import styles from './AgendaForm.module.scss';
 const isSubmitKey = (event) =>
   event.key === 'Enter' && !event.nativeEvent.isComposing;
 
-export const AgendaForm = ({ agendaCount, onSubmit }) => {
-  const [name, setName] = useState('');
+// editingAgenda가 있으면 해당 안건을 불러와 수정한다. (바뀔 때마다 key로 새로 마운트)
+export const AgendaForm = ({ agendaCount, editingAgenda, onSubmit }) => {
+  const isEditing = Boolean(editingAgenda);
+  const [name, setName] = useState(editingAgenda?.name ?? '');
   const [keywordInput, setKeywordInput] = useState('');
-  const [keywords, setKeywords] = useState([]);
+  const [keywords, setKeywords] = useState(editingAgenda?.keywords ?? []);
 
   const trimmedKeyword = keywordInput.trim();
   const isKeywordTooLong = trimmedKeyword.length > KEYWORD_MAX_LENGTH;
@@ -34,7 +36,7 @@ export const AgendaForm = ({ agendaCount, onSubmit }) => {
   const canSubmit =
     name.trim().length > 0 &&
     !isKeywordTooLong &&
-    agendaCount < AGENDA_MAX_COUNT;
+    (isEditing || agendaCount < AGENDA_MAX_COUNT);
 
   const handleAddKeyword = () => {
     if (!canAddKeyword) return;
@@ -147,8 +149,14 @@ export const AgendaForm = ({ agendaCount, onSubmit }) => {
         onClick={handleSubmit}
         disabled={!canSubmit}
       >
-        <img src={canSubmit ? addAgenda : addAgendaGray} alt="" />
-        안건 추가하기
+        {isEditing ? (
+          '안건 수정하기'
+        ) : (
+          <>
+            <img src={canSubmit ? addAgenda : addAgendaGray} alt="" />
+            안건 추가하기
+          </>
+        )}
       </button>
     </section>
   );

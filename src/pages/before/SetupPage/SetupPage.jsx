@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { playGray } from '@/assets';
 import { BackHeader } from '@/components/common/BackHeader/BackHeader';
 import { BottomBar } from '@/components/common/BottomBar/BottomBar';
+import { AgendaCard } from './components/AgendaCard';
 import { AgendaForm } from './components/AgendaForm';
 import { FieldLabel } from './components/FieldLabel';
 import { TargetTimeSlider } from './components/TargetTimeSlider';
@@ -19,6 +20,7 @@ export const SetupPage = () => {
   const [participants, setParticipants] = useState('');
   const [targetTime, setTargetTime] = useState(null);
   const [agendas, setAgendas] = useState([]);
+  const [editingId, setEditingId] = useState(null);
 
   const isTitleTooLong = title.length > TITLE_MAX_LENGTH;
 
@@ -37,11 +39,35 @@ export const SetupPage = () => {
     }
   };
 
-  const handleAddAgenda = ({ name, keywords }) => {
+  const editingAgenda = agendas.find((agenda) => agenda.id === editingId);
+
+  const updateAgenda = (id, changes) => {
+    setAgendas((prev) =>
+      prev.map((agenda) =>
+        agenda.id === id ? { ...agenda, ...changes } : agenda,
+      ),
+    );
+  };
+
+  const handleSubmitAgenda = ({ name, keywords }) => {
+    if (editingAgenda) {
+      updateAgenda(editingAgenda.id, { name, keywords });
+      setEditingId(null);
+      return;
+    }
     setAgendas((prev) => [
       ...prev,
       { id: crypto.randomUUID(), name, keywords, minutes: '' },
     ]);
+  };
+
+  const handleEditAgenda = (id) => {
+    setEditingId((prev) => (prev === id ? null : id));
+  };
+
+  const handleDeleteAgenda = (id) => {
+    setAgendas((prev) => prev.filter((agenda) => agenda.id !== id));
+    if (editingId === id) setEditingId(null);
   };
 
   return (
@@ -128,10 +154,32 @@ export const SetupPage = () => {
 
           <TargetTimeSlider value={targetTime} onChange={setTargetTime} />
 
-          <AgendaForm agendaCount={agendas.length} onSubmit={handleAddAgenda} />
+          <AgendaForm
+            key={editingId ?? 'new'}
+            agendaCount={agendas.length}
+            editingAgenda={editingAgenda}
+            onSubmit={handleSubmitAgenda}
+          />
 
-          {agendas.length === 0 && (
+          {agendas.length === 0 ? (
             <p className={styles.emptyText}>등록된 안건이 없어요.</p>
+          ) : (
+            <ol className={styles.agendaList}>
+              {agendas.map((agenda, index) => (
+                <li key={agenda.id}>
+                  <AgendaCard
+                    order={index + 1}
+                    agenda={agenda}
+                    isEditing={agenda.id === editingId}
+                    onMinutesChange={(minutes) =>
+                      updateAgenda(agenda.id, { minutes })
+                    }
+                    onEdit={() => handleEditAgenda(agenda.id)}
+                    onDelete={() => handleDeleteAgenda(agenda.id)}
+                  />
+                </li>
+              ))}
+            </ol>
           )}
         </div>
       </main>
