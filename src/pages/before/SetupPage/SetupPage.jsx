@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { playGray } from '@/assets';
+import { playGray, playWhite } from '@/assets';
 import { BackHeader } from '@/components/common/BackHeader/BackHeader';
 import { BottomBar } from '@/components/common/BottomBar/BottomBar';
 import { AgendaCard } from './components/AgendaCard';
 import { AgendaForm } from './components/AgendaForm';
+import { ConsentCheck } from './components/ConsentCheck';
 import { FieldLabel } from './components/FieldLabel';
 import { TargetTimeSlider } from './components/TargetTimeSlider';
 import {
@@ -12,6 +13,7 @@ import {
   PARTICIPANTS_MIN,
   TITLE_MAX_LENGTH,
 } from './constants';
+import { getStartBlocker } from './getStartBlocker';
 import styles from './SetupPage.module.scss';
 import { useDragSort } from './useDragSort';
 
@@ -22,8 +24,15 @@ export const SetupPage = () => {
   const [targetTime, setTargetTime] = useState(null);
   const [agendas, setAgendas] = useState([]);
   const [editingId, setEditingId] = useState(null);
+  const [agreed, setAgreed] = useState(false);
 
   const isTitleTooLong = title.length > TITLE_MAX_LENGTH;
+  const startBlocker = getStartBlocker({ title, agendas, targetTime, agreed });
+  const canStart = !startBlocker;
+
+  const handleStart = () => {
+    // TODO: 회의 생성 API 연동 후 생성된 회의 화면으로 이동
+  };
 
   const handleParticipantsChange = (event) => {
     const digits = event.target.value.replace(/\D/g, '');
@@ -190,9 +199,17 @@ export const SetupPage = () => {
             </ol>
           )}
         </div>
+
+        <ConsentCheck checked={agreed} onChange={setAgreed} />
       </main>
 
-      <BottomBar icon={playGray} disabled>
+      <BottomBar
+        icon={canStart ? playWhite : playGray}
+        onClick={handleStart}
+        disabled={!canStart}
+        notice={startBlocker?.message}
+        noticeType={startBlocker?.type}
+      >
         회의 시작하기
       </BottomBar>
     </div>
