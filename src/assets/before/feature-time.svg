@@ -1,0 +1,7 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="86" height="84" viewBox="0 0 86 84" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Visual">
+<rect width="86" height="84" rx="14" fill="white"/>
+<circle id="Track" cx="43" cy="42" r="22.5" stroke-width="7" stroke="#A3A3A3"/>
+<path id="Progress" d="M43 16C48.7701 16 54.3763 17.9194 58.9356 21.456C63.4949 24.9925 66.7482 29.9452 68.1832 35.5341C69.6181 41.1229 69.1532 47.0303 66.8616 52.3258C64.57 57.6214 60.582 62.0042 55.5256 64.784L52.2689 58.8601C56.0107 56.8031 58.9618 53.5598 60.6576 49.6411C62.3534 45.7224 62.6974 41.3509 61.6355 37.2152C60.5737 33.0795 58.1662 29.4145 54.7923 26.7974C51.4185 24.1804 47.2699 22.76 43 22.76L43 16Z" fill="#9EA459"/>
+</g>
+</svg>

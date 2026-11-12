@@ -1,0 +1,42 @@
+@use '@/styles/variables' as *;
+@use '@/styles/function' as *;
+
+.bottomBar {
+  position: sticky;
+  bottom: 0;
+  flex-shrink: 0;
+  margin-top: auto;
+  height: 88px;
+  padding: 12px 20px 32px;
+  border-top: 0.5px solid $color-gray-200;
+  background-color: $color-gray-white;
+}
+
+.button {
+  @include flex(row, center, center, 8px);
+  @include hoverEvent;
+  width: 100%;
+  height: 44px;
+  border: none;
+  border-radius: 999px;
+  background-color: $color-primary-400;
+
+  &:disabled {
+    background-color: $color-gray-150;
+    filter: none;
+    cursor: default;
+
+    .buttonText {
+      color: $color-gray-400;
+    }
+  }
+}
+
+.buttonText {
+  font-size: $font-size-16;
+  font-weight: $font-weight-bold;
+  line-height: 1.22;
+  letter-spacing: -0.03em;
+  color: $color-gray-white;
+  white-space: nowrap;
+}

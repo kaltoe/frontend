@@ -1,0 +1,280 @@
+@use '@/styles/variables' as *;
+@use '@/styles/function' as *;
+
+.page {
+  @include flex(column, stretch, flex-start);
+  position: relative;
+  min-height: 100dvh;
+  background-color: $color-gray-100;
+}
+
+// 본문
+.content {
+  @include flex(column, stretch, flex-start, 40px);
+  flex: 1;
+  padding: vh(86px) 20px 40px;
+}
+
+.intro {
+  @include flex(column, stretch, flex-start, 12px);
+}
+
+.introTop {
+  @include flex(column, stretch, flex-start, 16px);
+}
+
+.headline {
+  @include flex(column, flex-start, flex-start, 8px);
+}
+
+.title {
+  font-size: vw(28px);
+  line-height: 1.22;
+  letter-spacing: -0.03em;
+  color: $color-gray-900;
+  white-space: nowrap;
+
+  &,
+  & * {
+    font-weight: $font-weight-black;
+  }
+}
+
+.highlight {
+  padding: 0 2px;
+  background: linear-gradient(
+    to bottom,
+    $color-gray-100 55%,
+    $color-primary-400 55%
+  );
+}
+
+.description {
+  font-size: $font-size-14;
+  line-height: 1.55;
+  color: $color-gray-500;
+  word-break: keep-all;
+}
+
+// 특징 3가지
+.featureBlock {
+  @include flex(column, stretch, flex-start, 24px);
+}
+
+.featureCard {
+  @include flex(row, center, space-between);
+  height: 136px;
+  padding: 18px max(14px, calc((100% - 306px) / 2)) 12px;
+  border-radius: 24px;
+  background-color: $color-gray-150;
+  list-style: none;
+}
+
+.feature {
+  @include flex(column, center, flex-start, 8px);
+}
+
+.featureLabel {
+  font-size: $font-size-10;
+  line-height: 1.4;
+  letter-spacing: -0.01em;
+  color: $color-gray-900;
+  white-space: nowrap;
+}
+
+.alertVisual {
+  position: relative;
+  width: 86px;
+  height: 84px;
+  border-radius: 14px;
+  background-color: $color-gray-white;
+  overflow: hidden;
+}
+
+.bar {
+  position: absolute;
+  top: 27px;
+  left: 13px;
+  width: 60px;
+  height: 7px;
+  border-radius: 3.5px;
+  background-color: $color-gray-400;
+}
+
+.barShort {
+  top: 42px;
+  width: 38px;
+}
+
+.alert {
+  @include flex;
+  position: absolute;
+  top: 40px;
+  left: 42px;
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  background-color: $color-primary-500;
+}
+
+// 무료 체험 안내
+.trialTitle {
+  font-size: $font-size-14;
+  line-height: 1.22;
+  letter-spacing: -0.03em;
+  color: $color-gray-500;
+}
+
+.trial {
+  position: relative;
+}
+
+.trialLine {
+  position: absolute;
+  top: 4px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  overflow: hidden;
+
+  img {
+    display: block;
+  }
+}
+
+.trialSteps {
+  @include flex(row, flex-start, space-between);
+  position: relative;
+  list-style: none;
+}
+
+.trialStep {
+  @include flex(column, center, flex-start, 12px);
+  min-width: 70px;
+}
+
+.trialText {
+  @include flex(column, center, flex-start, 4px);
+  text-align: center;
+  line-height: 1.22;
+}
+
+.trialStepTitle {
+  font-size: $font-size-14;
+  font-weight: $font-weight-semibold;
+  letter-spacing: -0.03em;
+  color: $color-gray-900;
+}
+
+.trialStepDescription {
+  font-size: $font-size-12;
+  letter-spacing: -0.03em;
+  color: $color-gray-500;
+  white-space: nowrap;
+}
+
+// 초대 코드 입력
+.join {
+  @include flex(column, stretch, flex-start, 2px);
+}
+
+.joinBody {
+  @include flex(column, stretch, flex-start, 8px);
+}
+
+.joinHeading {
+  @include flex(column, flex-start, flex-start, 2px);
+}
+
+.joinTitle {
+  font-size: $font-size-18;
+  font-weight: $font-weight-bold;
+  line-height: 1.22;
+  letter-spacing: -0.03em;
+  color: $color-gray-900;
+}
+
+.joinDescription {
+  font-size: $font-size-14;
+  line-height: 1.55;
+  color: $color-gray-500;
+}
+
+.joinForm {
+  @include flex(row, center, flex-start, 6px);
+  height: 44px;
+}
+
+.joinField {
+  @include flex(row, center, flex-start, 6px);
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  padding: 10px 14px;
+  border: 0.5px solid $color-gray-500;
+  border-radius: 8px;
+  background-color: $color-gray-white;
+  cursor: text;
+}
+
+.joinInput {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: $font-size-14;
+  line-height: 1.55;
+  color: $color-gray-900;
+  user-select: text;
+  -webkit-user-select: text;
+
+  &::placeholder {
+    color: $color-gray-500;
+  }
+}
+
+.joinButton {
+  @include flex;
+  @include hoverEvent;
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: transparent;
+}
+
+.joinExample {
+  height: 18px;
+  font-size: $font-size-10;
+  line-height: 1.5;
+  letter-spacing: -0.01em;
+  color: $color-gray-500;
+}
+
+// 로딩
+.loading {
+  @include flex(column, center, flex-start, 8px);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+}
+
+.loadingText {
+  font-size: $font-size-14;
+  line-height: 1.22;
+  letter-spacing: -0.03em;
+  color: $color-gray-500;
+  white-space: nowrap;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
