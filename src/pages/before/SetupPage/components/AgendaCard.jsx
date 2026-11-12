@@ -6,6 +6,8 @@ export const AgendaCard = ({
   order,
   agenda,
   isEditing,
+  isDragging,
+  handleProps,
   onMinutesChange,
   onEdit,
   onDelete,
@@ -18,9 +20,11 @@ export const AgendaCard = ({
   };
 
   return (
-    <article className={`${styles.card} ${isEditing ? styles.editing : ''}`}>
+    <article
+      className={`${styles.card} ${isEditing ? styles.editing : ''} ${isDragging ? styles.dragging : ''}`}
+    >
       <div className={styles.main}>
-        <span className={styles.handle} aria-hidden="true">
+        <span className={styles.handle} aria-hidden="true" {...handleProps}>
           <img src={dragHandle} alt="" />
           <img src={dragHandle} alt="" />
         </span>

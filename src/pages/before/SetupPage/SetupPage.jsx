@@ -13,6 +13,7 @@ import {
   TITLE_MAX_LENGTH,
 } from './constants';
 import styles from './SetupPage.module.scss';
+import { useDragSort } from './useDragSort';
 
 export const SetupPage = () => {
   const [title, setTitle] = useState('');
@@ -38,6 +39,11 @@ export const SetupPage = () => {
       setParticipants(String(PARTICIPANTS_MIN));
     }
   };
+
+  const { draggingId, registerItem, getHandleProps } = useDragSort(
+    agendas,
+    setAgendas,
+  );
 
   const editingAgenda = agendas.find((agenda) => agenda.id === editingId);
 
@@ -166,11 +172,13 @@ export const SetupPage = () => {
           ) : (
             <ol className={styles.agendaList}>
               {agendas.map((agenda, index) => (
-                <li key={agenda.id}>
+                <li key={agenda.id} ref={registerItem(agenda.id)}>
                   <AgendaCard
                     order={index + 1}
                     agenda={agenda}
                     isEditing={agenda.id === editingId}
+                    isDragging={agenda.id === draggingId}
+                    handleProps={getHandleProps(agenda.id)}
                     onMinutesChange={(minutes) =>
                       updateAgenda(agenda.id, { minutes })
                     }
