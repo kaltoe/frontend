@@ -43,7 +43,7 @@ export const MainPage = () => {
       setIsCodeInvalid(true);
       return;
     }
-    navigate(`/join/${code}`);
+    navigate(`/m/${code}`);
   };
 
   return (
