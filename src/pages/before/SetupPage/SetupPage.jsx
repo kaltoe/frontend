@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { playGray } from '@/assets';
 import { BackHeader } from '@/components/common/BackHeader/BackHeader';
 import { BottomBar } from '@/components/common/BottomBar/BottomBar';
+import { AgendaForm } from './components/AgendaForm';
 import { FieldLabel } from './components/FieldLabel';
 import { TargetTimeSlider } from './components/TargetTimeSlider';
 import {
@@ -17,6 +18,7 @@ export const SetupPage = () => {
   const [meetingType, setMeetingType] = useState(MEETING_TYPES[0].value);
   const [participants, setParticipants] = useState('');
   const [targetTime, setTargetTime] = useState(null);
+  const [agendas, setAgendas] = useState([]);
 
   const isTitleTooLong = title.length > TITLE_MAX_LENGTH;
 
@@ -33,6 +35,13 @@ export const SetupPage = () => {
     if (participants && Number(participants) < PARTICIPANTS_MIN) {
       setParticipants(String(PARTICIPANTS_MIN));
     }
+  };
+
+  const handleAddAgenda = ({ name, keywords }) => {
+    setAgendas((prev) => [
+      ...prev,
+      { id: crypto.randomUUID(), name, keywords, minutes: '' },
+    ]);
   };
 
   return (
@@ -118,6 +127,12 @@ export const SetupPage = () => {
           </section>
 
           <TargetTimeSlider value={targetTime} onChange={setTargetTime} />
+
+          <AgendaForm agendaCount={agendas.length} onSubmit={handleAddAgenda} />
+
+          {agendas.length === 0 && (
+            <p className={styles.emptyText}>등록된 안건이 없어요.</p>
+          )}
         </div>
       </main>
 
