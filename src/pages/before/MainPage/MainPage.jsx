@@ -14,6 +14,7 @@ import {
   trialDotOutline,
   trialLine,
 } from '@/assets';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { extractMeetingCode } from './extractMeetingCode';
 import styles from './MainPage.module.scss';
 
@@ -23,9 +24,11 @@ const TRIAL_STEPS = [
   { title: '결제하면', description: '다시 볼 수 있어요', dot: trialDotOutline },
 ];
 
-// isLoading: 본문 대신 로딩 화면을 보여준다.
-export const MainPage = ({ isLoading = false }) => {
+export const MainPage = () => {
   const navigate = useNavigate();
+  // 네트워크가 끊기면 본문 대신 로딩 화면을 보여주고, 다시 연결되면 돌아온다.
+  const isOnline = useOnlineStatus();
+  const isLoading = !isOnline;
   const [codeInput, setCodeInput] = useState('');
 
   const handleCreateMeeting = () => {
