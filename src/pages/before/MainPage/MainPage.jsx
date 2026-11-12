@@ -30,6 +30,7 @@ export const MainPage = () => {
   const isOnline = useOnlineStatus();
   const isLoading = !isOnline;
   const [codeInput, setCodeInput] = useState('');
+  const [isCodeInvalid, setIsCodeInvalid] = useState(false);
 
   const handleCreateMeeting = () => {
     navigate('/setup');
@@ -38,8 +39,11 @@ export const MainPage = () => {
   const handleJoin = (event) => {
     event.preventDefault();
     const code = extractMeetingCode(codeInput);
-    if (!code) return;
-    navigate(`/join/${encodeURIComponent(code)}`);
+    if (!code) {
+      setIsCodeInvalid(true);
+      return;
+    }
+    navigate(`/join/${code}`);
   };
 
   return (
@@ -134,7 +138,11 @@ export const MainPage = () => {
                     className={styles.joinInput}
                     type="text"
                     value={codeInput}
-                    onChange={(event) => setCodeInput(event.target.value)}
+                    onChange={(event) => {
+                      setCodeInput(event.target.value);
+                      setIsCodeInvalid(false);
+                    }}
+                    aria-invalid={isCodeInvalid}
                     placeholder="회의 링크 또는 코드 입력"
                     aria-label="회의 링크 또는 코드"
                     autoComplete="off"
@@ -151,7 +159,16 @@ export const MainPage = () => {
                 </button>
               </form>
             </div>
-            <p className={styles.joinExample}>예: K7Q2MX</p>
+            {isCodeInvalid ? (
+              <p
+                className={`${styles.joinExample} ${styles.joinError}`}
+                role="alert"
+              >
+                회의 링크나 6자리 코드를 확인해주세요.
+              </p>
+            ) : (
+              <p className={styles.joinExample}>예: K7Q2MX</p>
+            )}
           </section>
         </main>
       )}

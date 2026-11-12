@@ -273,6 +273,10 @@
   color: $color-gray-500;
 }
 
+.joinError {
+  color: $color-danger-500;
+}
+
 // 로딩
 .loading {
   @include flex(column, center, flex-start, 8px);
