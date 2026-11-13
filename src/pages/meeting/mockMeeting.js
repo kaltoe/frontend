@@ -61,4 +61,31 @@ export const mockMeeting = {
     role: 'HOST', // 'HOST' | 'MEMBER'
     micState: 'ON', // 'ON' | 'OFF' | 'DENIED'
   },
+
+  // 실시간 자막 상태: 'OK' | 'DELAYED'(지연) | 'NO_AUDIO'(음성 미감지)
+  sttStatus: 'OK',
+
+  // 현재 안건의 확정 자막 (API-04 transcripts, WS-01 transcript.final)
+  // offsetMs: 녹음 타임라인 위치(ms) → 자막 앞 시간 표시
+  // speakerName: 비대면(REMOTE)일 때 말한 사람 이름, 대면이면 null
+  //   TODO: API-04 transcripts에는 speakerName이 없음. 비대면 새로고침 시 이름이 빠지므로 추가 요청 필요
+  transcripts: [
+    {
+      utteranceId: 301,
+      text: '지난주 캠페인 CTR이 2.4%로 목표보다 조금 높게 나왔어요.',
+      offsetMs: 1000,
+      agendaId: 12,
+      speakerName: null,
+    },
+    {
+      utteranceId: 302,
+      text: '전환율도 같이 확인해 보면 좋을 것 같아요. 지난달이랑 비교해서 어떤지 궁금해요.',
+      offsetMs: 9000,
+      agendaId: 12,
+      speakerName: null,
+    },
+  ],
+
+  // 인식 중인 자막 (WS-01 transcript.partial). 확정되면 transcripts로 옮겨지고 null
+  partialTranscript: null,
 };

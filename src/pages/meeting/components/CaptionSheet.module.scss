@@ -1,0 +1,170 @@
+@use '@/styles/variables' as *;
+@use '@/styles/function' as *;
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background-color: $color-overlay-dim;
+}
+
+.sheet {
+  position: absolute;
+  top: calc(env(safe-area-inset-top) + #{rem(58px)});
+  bottom: 0;
+  left: 50%;
+  @include flex(column, stretch, flex-start);
+  width: 100%;
+  max-width: rem(390px);
+  overflow: hidden;
+  background-color: $color-gray-white;
+  border-radius: rem(20px) rem(20px) 0 0;
+  transform: translateX(-50%);
+}
+
+.grabber {
+  @include flex;
+  flex-shrink: 0;
+  padding: rem(10px) 0 rem(6px);
+}
+
+.grabberBar {
+  width: rem(38px);
+  height: rem(5px);
+  background-color: $color-gray-400;
+  border-radius: rem(3px);
+}
+
+// 제목 + 안건 + 닫기, 아래 구분선
+.header {
+  @include flex(row, flex-start, space-between, rem(12px));
+  flex-shrink: 0;
+  margin-top: rem(16px);
+  padding: 0 rem(20px) rem(12px);
+  border-bottom: 0.5px solid $color-gray-500;
+}
+
+.headerText {
+  @include flex(column, flex-start, flex-start, rem(6px));
+  min-width: 0;
+}
+
+.titleRow {
+  @include flex($gap: rem(12px));
+}
+
+.title {
+  font-size: $font-size-18;
+  font-weight: $font-weight-bold;
+  line-height: 1.22;
+  letter-spacing: -0.03em;
+  color: $color-gray-900;
+  white-space: nowrap;
+}
+
+.agenda {
+  min-height: rem(27px);
+  font-size: $font-size-14;
+  line-height: 1.22;
+  letter-spacing: -0.03em;
+  color: $color-gray-500;
+}
+
+.close {
+  @include flex;
+  flex-shrink: 0;
+  width: rem(24px);
+  height: rem(24px);
+  margin: rem(-3px) rem(-7px) 0 0;
+  padding: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+
+  img {
+    transform: rotate(-90deg);
+  }
+}
+
+.listArea {
+  flex: 1;
+  min-height: 0;
+  padding: rem(20px) rem(20px) rem(24px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.list {
+  @include flex(column, stretch, flex-start, rem(8px));
+  list-style: none;
+}
+
+.empty {
+  font-size: $font-size-14;
+  line-height: 1.55;
+  color: $color-gray-500;
+}
+
+.footer {
+  @include flex($justify-content: space-between, $gap: rem(12px));
+  flex-shrink: 0;
+  height: calc(#{rem(74px)} + env(safe-area-inset-bottom));
+  padding: rem(14px) rem(20px) calc(#{rem(14px)} + env(safe-area-inset-bottom));
+  border-top: 0.5px solid $color-gray-500;
+}
+
+.mic {
+  @include flex;
+  width: rem(40px);
+  height: rem(40px);
+  padding: 0;
+  background-color: $color-gray-white;
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+
+  &:disabled {
+    cursor: default;
+  }
+}
+
+.micOff {
+  position: relative;
+  width: rem(26px);
+  height: rem(26px);
+}
+
+.micOffBody,
+.micOffSlash {
+  position: absolute;
+  display: block;
+}
+
+.micOffBody {
+  inset: 8.52% 12.48% 12.48% 12.48%;
+  width: 75.04%;
+  height: 79%;
+}
+
+.micOffSlash {
+  inset: 41.67% 33.33% 8.33% 20.83%;
+  width: 45.84%;
+  height: 50%;
+}
+
+.remaining {
+  font-size: $font-size-16;
+  font-weight: $font-weight-bold;
+  line-height: 1.4;
+  letter-spacing: -0.01em;
+  color: $color-gray-900;
+  font-variant-numeric: tabular-nums;
+
+  &.warning {
+    color: $color-warning-500;
+  }
+
+  &.over {
+    color: $color-danger-500;
+  }
+}
