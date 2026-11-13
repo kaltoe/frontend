@@ -36,4 +36,10 @@
   &::placeholder {
     color: $color-gray-500;
   }
+
+  // Edge가 비밀번호 칸에 자동으로 붙이는 보기(눈)·지우기 버튼 숨김
+  &::-ms-reveal,
+  &::-ms-clear {
+    display: none;
+  }
 }
