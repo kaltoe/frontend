@@ -9,10 +9,6 @@
   background-color: $color-primary-100;
 }
 
-.editing {
-  border-color: $color-primary-500;
-}
-
 .main {
   @include flex(row, flex-start, flex-start, 12px);
   flex: 1;

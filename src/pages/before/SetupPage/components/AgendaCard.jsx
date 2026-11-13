@@ -5,7 +5,6 @@ import styles from './AgendaCard.module.scss';
 export const AgendaCard = ({
   order,
   agenda,
-  isEditing,
   isDragging,
   handleProps,
   onMinutesChange,
@@ -19,9 +18,7 @@ export const AgendaCard = ({
   };
 
   return (
-    <article
-      className={`${styles.card} ${isEditing ? styles.editing : ''} ${isDragging ? styles.dragging : ''}`}
-    >
+    <article className={`${styles.card} ${isDragging ? styles.dragging : ''}`}>
       <div className={styles.main}>
         <span className={styles.handle} aria-hidden="true" {...handleProps}>
           <img src={dragHandle} alt="" />

@@ -18,12 +18,11 @@ import styles from './AgendaForm.module.scss';
 const isSubmitKey = (event) =>
   event.key === 'Enter' && !event.nativeEvent.isComposing;
 
-// editingAgenda가 있으면 해당 안건을 불러와 수정한다. (바뀔 때마다 key로 새로 마운트)
-export const AgendaForm = ({ agendaCount, editingAgenda, onSubmit }) => {
-  const isEditing = Boolean(editingAgenda);
-  const [name, setName] = useState(editingAgenda?.name ?? '');
+// draft: 수정하려고 카드에서 꺼낸 안건. 바뀔 때마다 key로 새로 마운트해 입력란을 채운다.
+export const AgendaForm = ({ agendaCount, draft, onSubmit }) => {
+  const [name, setName] = useState(draft?.name ?? '');
   const [keywordInput, setKeywordInput] = useState('');
-  const [keywords, setKeywords] = useState(editingAgenda?.keywords ?? []);
+  const [keywords, setKeywords] = useState(draft?.keywords ?? []);
 
   const trimmedKeyword = keywordInput.trim();
   const isKeywordTooLong = trimmedKeyword.length > KEYWORD_MAX_LENGTH;
@@ -36,7 +35,7 @@ export const AgendaForm = ({ agendaCount, editingAgenda, onSubmit }) => {
   const canSubmit =
     name.trim().length > 0 &&
     !isKeywordTooLong &&
-    (isEditing || agendaCount < AGENDA_MAX_COUNT);
+    agendaCount < AGENDA_MAX_COUNT;
 
   const handleAddKeyword = () => {
     if (!canAddKeyword) return;
@@ -110,6 +109,7 @@ export const AgendaForm = ({ agendaCount, editingAgenda, onSubmit }) => {
             onKeyDown={(event) => isSubmitKey(event) && handleSubmit()}
             placeholder="안건을 입력하세요."
             autoComplete="off"
+            autoFocus={Boolean(draft)}
           />
           <label
             className={`${styles.keywordBox} ${isKeywordTooLong ? styles.keywordBoxError : ''}`}
@@ -149,14 +149,8 @@ export const AgendaForm = ({ agendaCount, editingAgenda, onSubmit }) => {
         onClick={handleSubmit}
         disabled={!canSubmit}
       >
-        {isEditing ? (
-          '안건 수정하기'
-        ) : (
-          <>
-            <img src={canSubmit ? addAgenda : addAgendaGray} alt="" />
-            안건 추가하기
-          </>
-        )}
+        <img src={canSubmit ? addAgenda : addAgendaGray} alt="" />
+        안건 추가하기
       </button>
     </section>
   );

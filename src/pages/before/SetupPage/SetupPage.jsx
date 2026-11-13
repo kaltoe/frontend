@@ -24,7 +24,7 @@ export const SetupPage = () => {
   const [participants, setParticipants] = useState('');
   const [targetTime, setTargetTime] = useState(null);
   const [agendas, setAgendas] = useState([]);
-  const [editingId, setEditingId] = useState(null);
+  const [draft, setDraft] = useState(null);
   const [agreed, setAgreed] = useState(false);
 
   const isTitleTooLong = title.length > TITLE_MAX_LENGTH;
@@ -55,8 +55,6 @@ export const SetupPage = () => {
     setAgendas,
   );
 
-  const editingAgenda = agendas.find((agenda) => agenda.id === editingId);
-
   const updateAgenda = (id, changes) => {
     setAgendas((prev) =>
       prev.map((agenda) =>
@@ -66,11 +64,7 @@ export const SetupPage = () => {
   };
 
   const handleSubmitAgenda = ({ name, keywords }) => {
-    if (editingAgenda) {
-      updateAgenda(editingAgenda.id, { name, keywords });
-      setEditingId(null);
-      return;
-    }
+    setDraft(null);
     setAgendas((prev) => [
       ...prev,
       {
@@ -82,13 +76,14 @@ export const SetupPage = () => {
     ]);
   };
 
-  const handleEditAgenda = (id) => {
-    setEditingId((prev) => (prev === id ? null : id));
-  };
-
   const handleDeleteAgenda = (id) => {
     setAgendas((prev) => prev.filter((agenda) => agenda.id !== id));
-    if (editingId === id) setEditingId(null);
+  };
+
+  // 수정할 안건은 목록에서 빼서 입력란으로 되돌린다. 다시 추가하면 목록 맨 뒤에 붙는다.
+  const handleEditAgenda = (agenda) => {
+    handleDeleteAgenda(agenda.id);
+    setDraft({ id: agenda.id, name: agenda.name, keywords: agenda.keywords });
   };
 
   return (
@@ -176,9 +171,9 @@ export const SetupPage = () => {
           <TargetTimeSlider value={targetTime} onChange={setTargetTime} />
 
           <AgendaForm
-            key={editingId ?? 'new'}
+            key={draft?.id ?? 'new'}
             agendaCount={agendas.length}
-            editingAgenda={editingAgenda}
+            draft={draft}
             onSubmit={handleSubmitAgenda}
           />
 
@@ -191,13 +186,12 @@ export const SetupPage = () => {
                   <AgendaCard
                     order={index + 1}
                     agenda={agenda}
-                    isEditing={agenda.id === editingId}
                     isDragging={agenda.id === draggingId}
                     handleProps={getHandleProps(agenda.id)}
                     onMinutesChange={(minutes) =>
                       updateAgenda(agenda.id, { minutes })
                     }
-                    onEdit={() => handleEditAgenda(agenda.id)}
+                    onEdit={() => handleEditAgenda(agenda)}
                     onDelete={() => handleDeleteAgenda(agenda.id)}
                   />
                 </li>
