@@ -209,7 +209,9 @@ export const SetupPage = () => {
           )}
         </div>
 
-        <ConsentCheck checked={agreed} onChange={setAgreed} />
+        {agendas.length > 0 && (
+          <ConsentCheck checked={agreed} onChange={setAgreed} />
+        )}
       </main>
 
       <BottomBar
