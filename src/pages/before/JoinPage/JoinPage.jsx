@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { infoGray, joinGray, lock, people, person } from '@/assets';
+import { infoGray, joinGray, joinWhite, lock, people, person } from '@/assets';
 import { BackHeader } from '@/components/common/BackHeader/BackHeader';
 import { BottomBar } from '@/components/common/BottomBar/BottomBar';
 import { FieldLabel } from '@/components/common/FieldLabel/FieldLabel';
@@ -16,7 +16,14 @@ export const JoinPage = () => {
   const [password, setPassword] = useState('');
   const [recoveryKey, setRecoveryKey] = useState('');
 
+  const isNameEmpty = name.trim().length === 0;
   const isNameTooLong = name.length > NAME_MAX_LENGTH;
+  const canJoin =
+    !isNameEmpty && !isNameTooLong && password.length === PASSWORD_LENGTH;
+
+  const handleJoin = () => {
+    // TODO: 회의 입장 API 연동 (recoveryKey가 있으면 진행자로 입장)
+  };
 
   const handlePasswordChange = (event) => {
     setPassword(
@@ -97,7 +104,12 @@ export const JoinPage = () => {
         </div>
       </main>
 
-      <BottomBar icon={joinGray} disabled>
+      <BottomBar
+        icon={canJoin ? joinWhite : joinGray}
+        onClick={handleJoin}
+        disabled={!canJoin}
+        notice={isNameEmpty ? '이름을 입력해주세요.' : undefined}
+      >
         회의 입장하기
       </BottomBar>
     </div>
