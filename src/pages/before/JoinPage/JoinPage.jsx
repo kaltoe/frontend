@@ -4,6 +4,7 @@ import { BackHeader } from '@/components/common/BackHeader/BackHeader';
 import { BottomBar } from '@/components/common/BottomBar/BottomBar';
 import { FieldLabel } from '@/components/common/FieldLabel/FieldLabel';
 import { IconInput } from './components/IconInput';
+import { RecoveryKeyField } from './components/RecoveryKeyField';
 import { NAME_MAX_LENGTH, PASSWORD_LENGTH } from './constants';
 import styles from './JoinPage.module.scss';
 
@@ -13,6 +14,7 @@ const meeting = { title: '회의 제목', participantCount: 3 };
 export const JoinPage = () => {
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
+  const [recoveryKey, setRecoveryKey] = useState('');
 
   const isNameTooLong = name.length > NAME_MAX_LENGTH;
 
@@ -81,6 +83,8 @@ export const JoinPage = () => {
             </div>
           </section>
         </div>
+
+        <RecoveryKeyField value={recoveryKey} onChange={setRecoveryKey} />
 
         <div className={styles.note}>
           <img className={styles.noteIcon} src={infoGray} alt="" />
