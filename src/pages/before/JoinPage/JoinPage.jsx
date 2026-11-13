@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { infoGray, joinGray, people, person } from '@/assets';
+import { infoGray, joinGray, lock, people, person } from '@/assets';
 import { BackHeader } from '@/components/common/BackHeader/BackHeader';
 import { BottomBar } from '@/components/common/BottomBar/BottomBar';
 import { FieldLabel } from '@/components/common/FieldLabel/FieldLabel';
 import { IconInput } from './components/IconInput';
-import { NAME_MAX_LENGTH } from './constants';
+import { NAME_MAX_LENGTH, PASSWORD_LENGTH } from './constants';
 import styles from './JoinPage.module.scss';
 
 // TODO: 회의 조회 API 연동 후 링크 코드(useParams의 code)로 받아온 값으로 교체
@@ -12,8 +12,15 @@ const meeting = { title: '회의 제목', participantCount: 3 };
 
 export const JoinPage = () => {
   const [name, setName] = useState('');
+  const [password, setPassword] = useState('');
 
   const isNameTooLong = name.length > NAME_MAX_LENGTH;
+
+  const handlePasswordChange = (event) => {
+    setPassword(
+      event.target.value.replace(/\D/g, '').slice(0, PASSWORD_LENGTH),
+    );
+  };
 
   return (
     <div className={styles.page}>
@@ -51,6 +58,25 @@ export const JoinPage = () => {
                 className={`${styles.counter} ${isNameTooLong ? styles.counterError : ''}`}
               >
                 {name.length}/{NAME_MAX_LENGTH}
+              </p>
+            </div>
+          </section>
+
+          <section className={styles.field}>
+            <FieldLabel htmlFor="join-password">비밀번호</FieldLabel>
+            <div className={styles.inputGroup}>
+              <IconInput
+                id="join-password"
+                icon={lock}
+                type="password"
+                inputMode="numeric"
+                maxLength={PASSWORD_LENGTH}
+                value={password}
+                onChange={handlePasswordChange}
+                placeholder={`숫자 ${PASSWORD_LENGTH}자리`}
+              />
+              <p className={styles.hint}>
+                비밀번호를 입력하면 재입장 시 같은 이름으로 이어져요.
               </p>
             </div>
           </section>
