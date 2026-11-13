@@ -17,4 +17,5 @@ export const TARGET_TIME_SCALE = [5, 60, 120, 180];
 export const AGENDA_MAX_COUNT = 5;
 export const KEYWORD_MAX_LENGTH = 6;
 export const KEYWORD_MAX_COUNT = 5;
-export const AGENDA_TIME_MAX = 180;
+export const AGENDA_DEFAULT_MINUTES = 10;
+export const AGENDA_MINUTES_MAX_DIGITS = 3;

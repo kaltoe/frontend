@@ -1,5 +1,5 @@
 import { dragHandle, edit, trash } from '@/assets';
-import { AGENDA_TIME_MAX } from '../constants';
+import { AGENDA_MINUTES_MAX_DIGITS } from '../constants';
 import styles from './AgendaCard.module.scss';
 
 export const AgendaCard = ({
@@ -13,9 +13,8 @@ export const AgendaCard = ({
   onDelete,
 }) => {
   const handleMinutesChange = (event) => {
-    const digits = event.target.value.replace(/\D/g, '');
     onMinutesChange(
-      digits ? String(Math.min(Number(digits), AGENDA_TIME_MAX)) : '',
+      event.target.value.replace(/\D/g, '').slice(0, AGENDA_MINUTES_MAX_DIGITS),
     );
   };
 

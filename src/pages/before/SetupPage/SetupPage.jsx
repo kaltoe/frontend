@@ -8,6 +8,7 @@ import { ConsentCheck } from './components/ConsentCheck';
 import { FieldLabel } from './components/FieldLabel';
 import { TargetTimeSlider } from './components/TargetTimeSlider';
 import {
+  AGENDA_DEFAULT_MINUTES,
   MEETING_TYPES,
   PARTICIPANTS_MAX,
   PARTICIPANTS_MIN,
@@ -72,7 +73,12 @@ export const SetupPage = () => {
     }
     setAgendas((prev) => [
       ...prev,
-      { id: crypto.randomUUID(), name, keywords, minutes: '' },
+      {
+        id: crypto.randomUUID(),
+        name,
+        keywords,
+        minutes: String(AGENDA_DEFAULT_MINUTES),
+      },
     ]);
   };
 
