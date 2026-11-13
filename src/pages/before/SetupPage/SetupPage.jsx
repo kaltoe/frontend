@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { playGray, playWhite } from '@/assets';
 import { BackHeader } from '@/components/common/BackHeader/BackHeader';
 import { BottomBar } from '@/components/common/BottomBar/BottomBar';
@@ -25,7 +25,16 @@ export const SetupPage = () => {
   const [targetTime, setTargetTime] = useState(null);
   const [agendas, setAgendas] = useState([]);
   const [draft, setDraft] = useState(null);
+  const [selectedId, setSelectedId] = useState(null);
   const [agreed, setAgreed] = useState(false);
+
+  useEffect(() => {
+    const handlePointerDown = (event) => {
+      if (!event.target.closest('[data-agenda-card]')) setSelectedId(null);
+    };
+    document.addEventListener('pointerdown', handlePointerDown);
+    return () => document.removeEventListener('pointerdown', handlePointerDown);
+  }, []);
 
   const isTitleTooLong = title.length > TITLE_MAX_LENGTH;
   const startBlocker = getStartBlocker({ title, agendas, targetTime, agreed });
@@ -64,20 +73,18 @@ export const SetupPage = () => {
   };
 
   const handleSubmitAgenda = ({ name, keywords }) => {
+    const id = crypto.randomUUID();
     setDraft(null);
     setAgendas((prev) => [
       ...prev,
-      {
-        id: crypto.randomUUID(),
-        name,
-        keywords,
-        minutes: String(AGENDA_DEFAULT_MINUTES),
-      },
+      { id, name, keywords, minutes: String(AGENDA_DEFAULT_MINUTES) },
     ]);
+    setSelectedId(id);
   };
 
   const handleDeleteAgenda = (id) => {
     setAgendas((prev) => prev.filter((agenda) => agenda.id !== id));
+    setSelectedId(null);
   };
 
   // 수정할 안건은 목록에서 빼서 입력란으로 되돌린다. 다시 추가하면 목록 맨 뒤에 붙는다.
@@ -186,11 +193,13 @@ export const SetupPage = () => {
                   <AgendaCard
                     order={index + 1}
                     agenda={agenda}
+                    isSelected={agenda.id === selectedId}
                     isDragging={agenda.id === draggingId}
                     dragProps={getDragProps(agenda.id)}
                     onMinutesChange={(minutes) =>
                       updateAgenda(agenda.id, { minutes })
                     }
+                    onSelect={() => setSelectedId(agenda.id)}
                     onEdit={() => handleEditAgenda(agenda)}
                     onDelete={() => handleDeleteAgenda(agenda.id)}
                   />

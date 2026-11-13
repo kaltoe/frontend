@@ -5,8 +5,10 @@ import styles from './AgendaCard.module.scss';
 export const AgendaCard = ({
   order,
   agenda,
+  isSelected,
   isDragging,
   dragProps,
+  onSelect,
   onMinutesChange,
   onEdit,
   onDelete,
@@ -19,8 +21,10 @@ export const AgendaCard = ({
 
   return (
     <article
-      className={`${styles.card} ${isDragging ? styles.dragging : ''}`}
+      className={`${styles.card} ${isSelected ? styles.selected : ''} ${isDragging ? styles.dragging : ''}`}
+      data-agenda-card
       {...dragProps}
+      onClick={(event) => !event.target.closest('button') && onSelect()}
     >
       <div className={styles.main}>
         <span className={styles.handle} aria-hidden="true" data-drag-handle>
@@ -71,6 +75,7 @@ export const AgendaCard = ({
             inputMode="numeric"
             value={agenda.minutes}
             onChange={handleMinutesChange}
+            onFocus={onSelect}
             placeholder="0"
             aria-label={`${agenda.name} 안건 시간`}
             autoComplete="off"
