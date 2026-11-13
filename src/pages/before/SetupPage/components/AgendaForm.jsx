@@ -6,12 +6,12 @@ import {
   keywordSearch,
   plusOlive,
 } from '@/assets';
+import { FieldLabel } from '@/components/common/FieldLabel/FieldLabel';
 import {
   AGENDA_MAX_COUNT,
   KEYWORD_MAX_COUNT,
   KEYWORD_MAX_LENGTH,
 } from '../constants';
-import { FieldLabel } from './FieldLabel';
 import styles from './AgendaForm.module.scss';
 
 // 한글 입력 중 Enter를 누르면 조합이 끝나기 전에 한 번 더 호출되므로 막는다.
