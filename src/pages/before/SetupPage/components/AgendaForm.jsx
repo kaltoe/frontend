@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import {
   addAgenda,
   addAgendaGray,
@@ -24,18 +24,16 @@ export const AgendaForm = ({ agendaCount, draft, onSubmit }) => {
   const [keywordInput, setKeywordInput] = useState('');
   const [keywords, setKeywords] = useState(draft?.keywords ?? []);
 
+  const keywordInputRef = useRef(null);
+
   const trimmedKeyword = keywordInput.trim();
   const isKeywordTooLong = trimmedKeyword.length > KEYWORD_MAX_LENGTH;
-  const isKeywordFull = keywords.length >= KEYWORD_MAX_COUNT;
   const canAddKeyword =
     trimmedKeyword.length > 0 &&
     !isKeywordTooLong &&
-    !isKeywordFull &&
-    !keywords.includes(trimmedKeyword);
-  const canSubmit =
-    name.trim().length > 0 &&
-    !isKeywordTooLong &&
-    agendaCount < AGENDA_MAX_COUNT;
+    keywords.length < KEYWORD_MAX_COUNT;
+  const isFull = agendaCount >= AGENDA_MAX_COUNT;
+  const isSubmitDisabled = isKeywordTooLong || isFull;
 
   const handleAddKeyword = () => {
     if (!canAddKeyword) return;
@@ -43,47 +41,56 @@ export const AgendaForm = ({ agendaCount, draft, onSubmit }) => {
     setKeywordInput('');
   };
 
-  const handleRemoveKeyword = (target) => {
-    setKeywords((prev) => prev.filter((keyword) => keyword !== target));
+  const handleRemoveKeyword = (targetIndex) => {
+    setKeywords((prev) => prev.filter((_, index) => index !== targetIndex));
   };
 
+  // 키워드 입력란에 추가하지 않은 키워드가 남아 있으면 함께 등록한다.
   const handleSubmit = () => {
-    if (!canSubmit) return;
-    onSubmit({ name: name.trim(), keywords });
+    const trimmedName = name.trim();
+    if (!trimmedName || isSubmitDisabled) return;
+    onSubmit({
+      name: trimmedName,
+      keywords: canAddKeyword ? [...keywords, trimmedKeyword] : keywords,
+    });
     setName('');
     setKeywordInput('');
     setKeywords([]);
   };
 
+  const keywordError = isKeywordTooLong && (
+    <p className={`${styles.hint} ${styles.errorText}`}>
+      키워드를 {KEYWORD_MAX_LENGTH}자 이내로 입력해주세요.
+    </p>
+  );
+
   const renderKeywordHelper = () => {
-    if (isKeywordTooLong) {
-      return (
-        <p className={`${styles.hint} ${styles.errorText}`}>
-          키워드를 {KEYWORD_MAX_LENGTH}자 이내로 입력해주세요.
-        </p>
-      );
-    }
     if (keywords.length > 0) {
       return (
-        <ul className={styles.keywordChips}>
-          {keywords.map((keyword) => (
-            <li key={keyword} className={styles.keywordChip}>
-              {keyword}
-              <button
-                className={styles.removeButton}
-                type="button"
-                onClick={() => handleRemoveKeyword(keyword)}
-                aria-label={`${keyword} 키워드 삭제`}
-              >
-                <img src={close} alt="" />
-              </button>
-            </li>
-          ))}
-        </ul>
+        <>
+          <ul className={styles.keywordChips}>
+            {keywords.map((keyword, index) => (
+              <li key={index} className={styles.keywordChip}>
+                {keyword}
+                <button
+                  className={styles.removeButton}
+                  type="button"
+                  onClick={() => handleRemoveKeyword(index)}
+                  aria-label={`${keyword} 키워드 삭제`}
+                >
+                  <img src={close} alt="" />
+                </button>
+              </li>
+            ))}
+          </ul>
+          {keywordError}
+        </>
       );
     }
     return (
-      <p className={styles.hint}>키워드는 주제 이탈을 판단할 때 참고해요.</p>
+      keywordError || (
+        <p className={styles.hint}>키워드는 주제 이탈을 판단할 때 참고해요.</p>
+      )
     );
   };
 
@@ -106,7 +113,9 @@ export const AgendaForm = ({ agendaCount, draft, onSubmit }) => {
             type="text"
             value={name}
             onChange={(event) => setName(event.target.value)}
-            onKeyDown={(event) => isSubmitKey(event) && handleSubmit()}
+            onKeyDown={(event) =>
+              isSubmitKey(event) && keywordInputRef.current?.focus()
+            }
             placeholder="안건을 입력하세요."
             autoComplete="off"
             autoFocus={Boolean(draft)}
@@ -118,6 +127,7 @@ export const AgendaForm = ({ agendaCount, draft, onSubmit }) => {
               <img src={keywordSearch} alt="" />
             </span>
             <input
+              ref={keywordInputRef}
               className={styles.keywordInput}
               type="text"
               value={keywordInput}
@@ -126,7 +136,6 @@ export const AgendaForm = ({ agendaCount, draft, onSubmit }) => {
               placeholder="키워드를 입력하세요."
               aria-label="키워드"
               autoComplete="off"
-              disabled={isKeywordFull}
             />
             <button
               className={styles.keywordAddButton}
@@ -147,9 +156,9 @@ export const AgendaForm = ({ agendaCount, draft, onSubmit }) => {
         className={styles.submitButton}
         type="button"
         onClick={handleSubmit}
-        disabled={!canSubmit}
+        disabled={isSubmitDisabled}
       >
-        <img src={canSubmit ? addAgenda : addAgendaGray} alt="" />
+        <img src={isSubmitDisabled ? addAgendaGray : addAgenda} alt="" />
         안건 추가하기
       </button>
     </section>

@@ -32,8 +32,8 @@ export const AgendaCard = ({
           </div>
           {agenda.keywords.length > 0 && (
             <ul className={styles.keywords}>
-              {agenda.keywords.map((keyword) => (
-                <li key={keyword} className={styles.keyword}>
+              {agenda.keywords.map((keyword, index) => (
+                <li key={index} className={styles.keyword}>
                   {keyword}
                 </li>
               ))}
