@@ -1,5 +1,9 @@
 import { formatTimer } from '../utils/formatTimer';
-import { getTimerState, getUrgentState } from '../utils/timerState';
+import {
+  getTimerState,
+  getUrgentState,
+  isOvertimeAgenda,
+} from '../utils/timerState';
 import styles from './TotalTimer.module.scss';
 
 const getSegmentRatio = (index, currentIndex, timer) => {
@@ -13,7 +17,7 @@ const getSegmentRatio = (index, currentIndex, timer) => {
 
 export const TotalTimer = ({ agendas, timer }) => {
   const currentIndex = agendas.findIndex(
-    (agenda) => agenda.id === timer.currentAgendaId,
+    (agenda) => agenda.agendaId === timer.currentAgendaId,
   );
   const plannedMinutes = Math.round(timer.plannedTotalSeconds / 60);
 
@@ -48,16 +52,17 @@ export const TotalTimer = ({ agendas, timer }) => {
           {agendas.map((agenda, index) => {
             const ratio = getSegmentRatio(index, currentIndex, timer);
             const isCurrent = index === currentIndex;
-            const wasOver = !isCurrent && agenda.diffSeconds > 0;
+            // 초과로 끝난 안건은 다음 안건으로 넘어가도 빨간색 유지
+            const wasOver = !isCurrent && isOvertimeAgenda(agenda);
             let fillState = totalState;
 
             if (isCurrent) fillState = urgentState;
             else if (wasOver) fillState = 'over';
             return (
               <div
-                key={agenda.id}
+                key={agenda.agendaId}
                 className={styles.segment}
-                style={{ flexGrow: agenda.allocatedMinutes }}
+                style={{ flexGrow: agenda.allocatedSeconds }}
               >
                 <div
                   className={`${styles.fill} ${styles[fillState]}`}

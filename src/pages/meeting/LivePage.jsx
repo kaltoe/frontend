@@ -1,3 +1,4 @@
+import { AgendaCard } from './components/AgendaCard';
 import { LiveHeader } from './components/LiveHeader';
 import { TotalTimer } from './components/TotalTimer';
 import { useMeetingTimer } from './hooks/useMeetingTimer';
@@ -12,7 +13,7 @@ export const LivePage = () => {
     <div className={styles.page}>
       <LiveHeader
         title={meeting.title}
-        participantCount={meeting.participantCount}
+        participantCount={meeting.connectedCount}
         onInviteClick={() => {
           // TODO: 팀원 초대 팝업 (#21)
         }}
@@ -21,7 +22,7 @@ export const LivePage = () => {
       <main className={styles.content}>
         <div className={styles.timerArea}>
           <TotalTimer agendas={meeting.agendas} timer={timer} />
-          {/* TODO: 안건 카드 (#25, #26) */}
+          <AgendaCard agendas={meeting.agendas} timer={timer} />
         </div>
         {/* TODO: 실시간 자막 카드 (#31, #33) */}
       </main>
