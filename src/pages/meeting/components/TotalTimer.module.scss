@@ -1,0 +1,76 @@
+@use '@/styles/variables' as *;
+@use '@/styles/function' as *;
+
+.totalTimer {
+  @include flex(column, stretch, flex-start, rem(8px));
+}
+
+.label {
+  font-size: $font-size-14;
+  line-height: 1.55;
+  color: $color-gray-500;
+}
+
+.body {
+  @include flex(column, stretch, flex-start, rem(4px));
+}
+
+.time {
+  @include flex(row, flex-end, flex-start, rem(4px));
+}
+
+.remaining {
+  font-size: $font-size-46;
+  font-weight: $font-weight-black;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  color: $color-primary-500;
+  // 숫자가 바뀔 때 글자 폭이 흔들리지 않도록 고정폭 숫자 사용
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.planned {
+  font-size: $font-size-16;
+  font-weight: $font-weight-bold;
+  line-height: 1.55;
+  color: $color-gray-900;
+}
+
+.segments {
+  @include flex(row, stretch, flex-start, rem(2px));
+}
+
+.segment {
+  flex-basis: 0;
+  height: rem(6px);
+  overflow: hidden;
+  background-color: $color-gray-200;
+  border-radius: 999px;
+}
+
+.fill {
+  height: 100%;
+  background-color: $color-primary-500;
+  border-radius: rem(3px);
+}
+
+// 상태별 색 (라벨·숫자·진행 바 칸에 각각 붙음)
+// 임박(1분 이하): 노란색 / 초과: 빨간색
+.label.warning,
+.remaining.warning {
+  color: $color-warning-500;
+}
+
+.label.over,
+.remaining.over {
+  color: $color-danger-500;
+}
+
+.fill.warning {
+  background-color: $color-warning-500;
+}
+
+.fill.over {
+  background-color: $color-danger-500;
+}

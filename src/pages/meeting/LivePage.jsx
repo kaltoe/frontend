@@ -1,9 +1,12 @@
 import { LiveHeader } from './components/LiveHeader';
+import { TotalTimer } from './components/TotalTimer';
+import { useMeetingTimer } from './hooks/useMeetingTimer';
 import { mockMeeting } from './mockMeeting';
 import styles from './LivePage.module.scss';
 
 export const LivePage = () => {
   const meeting = mockMeeting;
+  const timer = useMeetingTimer(meeting.timer);
 
   return (
     <div className={styles.page}>
@@ -16,8 +19,10 @@ export const LivePage = () => {
       />
 
       <main className={styles.content}>
-        {/* TODO: 전체 타이머 (#23) */}
-        {/* TODO: 안건 카드 (#25, #26) */}
+        <div className={styles.timerArea}>
+          <TotalTimer agendas={meeting.agendas} timer={timer} />
+          {/* TODO: 안건 카드 (#25, #26) */}
+        </div>
         {/* TODO: 실시간 자막 카드 (#31, #33) */}
       </main>
 
