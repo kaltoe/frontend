@@ -1,6 +1,7 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { Layout } from './components/layout/Layout';
 import { ExpiredLinkPage } from './pages/after/ExpiredLinkPage/ExpiredLinkPage';
+import { JoinPage } from './pages/before/JoinPage/JoinPage';
 import { MainPage } from './pages/before/MainPage/MainPage';
 import { SetupPage } from './pages/before/SetupPage/SetupPage';
 
@@ -12,6 +13,7 @@ function App() {
         <Route element={<Layout />}>
           <Route path="/" element={<MainPage />} />
           <Route path="/setup" element={<SetupPage />} />
+          <Route path="/m/:code" element={<JoinPage />} />
           <Route path="/invalid-link" element={<ExpiredLinkPage />} />
           {/* <Route path="/onboarding" element={<OnboardingPage />} /> */}
         </Route>

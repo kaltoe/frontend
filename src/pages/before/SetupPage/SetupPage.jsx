@@ -2,10 +2,10 @@ import { useEffect, useState } from 'react';
 import { playGray, playWhite } from '@/assets';
 import { BackHeader } from '@/components/common/BackHeader/BackHeader';
 import { BottomBar } from '@/components/common/BottomBar/BottomBar';
+import { FieldLabel } from '@/components/common/FieldLabel/FieldLabel';
 import { AgendaCard } from './components/AgendaCard';
 import { AgendaForm } from './components/AgendaForm';
 import { ConsentCheck } from './components/ConsentCheck';
-import { FieldLabel } from './components/FieldLabel';
 import { TargetTimeSlider } from './components/TargetTimeSlider';
 import {
   AGENDA_DEFAULT_MINUTES,
