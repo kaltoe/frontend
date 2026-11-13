@@ -95,7 +95,7 @@ export const SetupPage = () => {
 
   return (
     <div className={styles.page}>
-      <BackHeader title="회의 만들기" />
+      <BackHeader title="회의 만들기" backTo="/" />
 
       <main className={styles.content}>
         <div className={styles.headline}>
