@@ -73,6 +73,7 @@
 .keywords {
   @include flex(row, flex-start, flex-start, 4px);
   flex-wrap: wrap;
+  margin-left: 27px;
   list-style: none;
 }
 
