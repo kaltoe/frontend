@@ -113,7 +113,7 @@ export const SetupPage = () => {
                 autoComplete="off"
               />
               <p
-                className={`${styles.counter} ${isTitleTooLong ? styles.errorText : ''}`}
+                className={`${styles.counter} ${isTitleTooLong ? styles.counterError : ''}`}
               >
                 {title.length}/{TITLE_MAX_LENGTH}
               </p>
