@@ -13,11 +13,16 @@ import featureSummary from '@/assets/before/feature-summary.svg';
 import featureTime from '@/assets/before/feature-time.svg';
 import infoGray from '@/assets/before/info-gray.svg';
 import infoRed from '@/assets/before/info-red.svg';
+import joinGray from '@/assets/before/join-gray.svg';
+import joinWhite from '@/assets/before/join-white.svg';
 import keywordSearch from '@/assets/before/keyword-search.svg';
 import link from '@/assets/before/link.svg';
 import linkGray from '@/assets/before/link-gray.svg';
 import loading from '@/assets/before/loading.svg';
+import lock from '@/assets/before/lock.svg';
 import logoRun from '@/assets/before/logo-run.svg';
+import people from '@/assets/before/people.svg';
+import person from '@/assets/before/person.svg';
 import playGray from '@/assets/before/play-gray.svg';
 import playWhite from '@/assets/before/play-white.svg';
 import plusGray from '@/assets/before/plus-gray.svg';
@@ -45,11 +50,16 @@ export {
   featureTime,
   infoGray,
   infoRed,
+  joinGray,
+  joinWhite,
   keywordSearch,
   link,
   linkGray,
   loading,
+  lock,
   logoRun,
+  people,
+  person,
   playGray,
   playWhite,
   plusGray,
