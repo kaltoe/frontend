@@ -1,0 +1,17 @@
+@use '@/styles/variables' as *;
+@use '@/styles/function' as *;
+
+.label {
+  @include flex(row, flex-start, flex-start, 2px);
+  font-size: $font-size-16;
+  font-weight: $font-weight-bold;
+  line-height: 1.22;
+  letter-spacing: -0.03em;
+  color: $color-gray-900;
+  white-space: nowrap;
+}
+
+// 아이콘 선 두께만큼 SVG가 실제 영역(4x5)보다 커서 바깥으로 넘치게 둔다.
+.requiredIcon {
+  margin: -0.35px;
+}
