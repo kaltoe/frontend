@@ -1,10 +1,14 @@
 import { useRef, useState } from 'react';
 
-// 손잡이를 누른 채로 위아래로 움직이면 목록 순서를 바꾼다.
-// 모바일 터치에서도 동작하도록 HTML5 드래그 대신 포인터 이벤트를 사용한다.
+const DRAG_START_DISTANCE = 4;
+
+// 카드를 누른 채로 위아래로 움직이면 목록 순서를 바꾼다.
+// 마우스는 카드 어디든(입력칸·버튼 제외) 잡을 수 있고,
+// 터치는 화면 스크롤과 겹치지 않도록 손잡이(data-drag-handle)를 잡았을 때만 끈다.
 export const useDragSort = (items, onReorder) => {
   const [draggingId, setDraggingId] = useState(null);
   const itemNodes = useRef(new Map());
+  const drag = useRef(null);
 
   const registerItem = (id) => (node) => {
     if (node) itemNodes.current.set(id, node);
@@ -27,20 +31,35 @@ export const useDragSort = (items, onReorder) => {
     ]);
   };
 
-  const endDrag = () => setDraggingId(null);
+  const endDrag = () => {
+    drag.current = null;
+    setDraggingId(null);
+  };
 
-  const getHandleProps = (id) => ({
+  const getDragProps = (id) => ({
     onPointerDown: (event) => {
-      event.preventDefault();
+      if (event.button !== 0) return;
+      const onHandle = event.target.closest('[data-drag-handle]');
+      if (!onHandle && event.target.closest('input, button')) return;
+      if (!onHandle && event.pointerType === 'touch') return;
+
+      if (onHandle) event.preventDefault();
       event.currentTarget.setPointerCapture(event.pointerId);
-      setDraggingId(id);
+      drag.current = { id, startY: event.clientY, isMoving: false };
     },
     onPointerMove: (event) => {
-      if (draggingId === id) moveTo(id, event.clientY);
+      if (drag.current?.id !== id) return;
+      if (!drag.current.isMoving) {
+        if (Math.abs(event.clientY - drag.current.startY) < DRAG_START_DISTANCE)
+          return;
+        drag.current.isMoving = true;
+        setDraggingId(id);
+      }
+      moveTo(id, event.clientY);
     },
     onPointerUp: endDrag,
     onPointerCancel: endDrag,
   });
 
-  return { draggingId, registerItem, getHandleProps };
+  return { draggingId, registerItem, getDragProps };
 };

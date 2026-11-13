@@ -50,7 +50,7 @@ export const SetupPage = () => {
     }
   };
 
-  const { draggingId, registerItem, getHandleProps } = useDragSort(
+  const { draggingId, registerItem, getDragProps } = useDragSort(
     agendas,
     setAgendas,
   );
@@ -187,7 +187,7 @@ export const SetupPage = () => {
                     order={index + 1}
                     agenda={agenda}
                     isDragging={agenda.id === draggingId}
-                    handleProps={getHandleProps(agenda.id)}
+                    dragProps={getDragProps(agenda.id)}
                     onMinutesChange={(minutes) =>
                       updateAgenda(agenda.id, { minutes })
                     }
