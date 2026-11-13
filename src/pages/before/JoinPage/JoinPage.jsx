@@ -1,12 +1,20 @@
-import { infoGray, joinGray, people } from '@/assets';
+import { useState } from 'react';
+import { infoGray, joinGray, people, person } from '@/assets';
 import { BackHeader } from '@/components/common/BackHeader/BackHeader';
 import { BottomBar } from '@/components/common/BottomBar/BottomBar';
+import { FieldLabel } from '@/components/common/FieldLabel/FieldLabel';
+import { IconInput } from './components/IconInput';
+import { NAME_MAX_LENGTH } from './constants';
 import styles from './JoinPage.module.scss';
 
 // TODO: 회의 조회 API 연동 후 링크 코드(useParams의 code)로 받아온 값으로 교체
 const meeting = { title: '회의 제목', participantCount: 3 };
 
 export const JoinPage = () => {
+  const [name, setName] = useState('');
+
+  const isNameTooLong = name.length > NAME_MAX_LENGTH;
+
   return (
     <div className={styles.page}>
       <BackHeader title="회의 입장하기" />
@@ -25,7 +33,28 @@ export const JoinPage = () => {
           </div>
         </div>
 
-        <div className={styles.form}></div>
+        <div className={styles.form}>
+          <section className={styles.field}>
+            <FieldLabel htmlFor="join-name" required>
+              이름
+            </FieldLabel>
+            <div className={styles.inputGroup}>
+              <IconInput
+                id="join-name"
+                icon={person}
+                isError={isNameTooLong}
+                value={name}
+                onChange={(event) => setName(event.target.value)}
+                placeholder="이름을 입력해주세요."
+              />
+              <p
+                className={`${styles.counter} ${isNameTooLong ? styles.counterError : ''}`}
+              >
+                {name.length}/{NAME_MAX_LENGTH}
+              </p>
+            </div>
+          </section>
+        </div>
 
         <div className={styles.note}>
           <img className={styles.noteIcon} src={infoGray} alt="" />

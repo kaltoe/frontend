@@ -51,6 +51,25 @@
   @include flex(column, stretch, flex-start);
 }
 
+.field {
+  @include flex(column, stretch, flex-start, 8px);
+}
+
+.inputGroup {
+  @include flex(column, stretch, flex-start, 2px);
+}
+
+.counter {
+  height: 15px;
+  font-size: $font-size-10;
+  line-height: 1.55;
+  color: $color-gray-500;
+}
+
+.counterError {
+  color: $color-danger-500;
+}
+
 .note {
   @include flex(row, flex-start, flex-start, 4px);
   margin-top: 40px;

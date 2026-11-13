@@ -1,0 +1,39 @@
+@use '@/styles/variables' as *;
+@use '@/styles/function' as *;
+
+.box {
+  @include flex(row, center, flex-start, 6px);
+  height: 44px;
+  padding: 10px 14px;
+  border: 0.5px solid $color-gray-500;
+  border-radius: 8px;
+  background-color: $color-gray-white;
+  cursor: text;
+}
+
+.boxError {
+  border-color: $color-danger-500;
+}
+
+.icon {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+}
+
+.input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: $font-size-14;
+  line-height: 1.55;
+  color: $color-gray-900;
+  user-select: text;
+  -webkit-user-select: text;
+
+  &::placeholder {
+    color: $color-gray-500;
+  }
+}
