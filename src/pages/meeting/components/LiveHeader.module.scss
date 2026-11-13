@@ -1,0 +1,48 @@
+@use '@/styles/variables' as *;
+@use '@/styles/function' as *;
+
+.header {
+  @include flex($justify-content: space-between);
+  padding: calc(env(safe-area-inset-top) + rem(16px)) rem(20px) rem(13px);
+  background-color: $color-gray-white;
+}
+
+.title {
+  font-size: $font-size-18;
+  font-weight: $font-weight-bold;
+  line-height: 1.22;
+  letter-spacing: -0.03em;
+  color: $color-gray-900;
+}
+
+.actions {
+  @include flex($gap: rem(12px));
+}
+
+.people {
+  @include flex($gap: rem(4px));
+}
+
+.peopleIcon {
+  width: rem(20px);
+  height: rem(20px);
+  color: $color-gray-400;
+}
+
+.count {
+  font-size: $font-size-12;
+  line-height: 1.5;
+  color: $color-gray-400;
+}
+
+.inviteButton {
+  @include flex;
+  width: rem(25px);
+  height: rem(25px);
+  // 피그마: 25px 칸 안에 아이콘 그림은 20×16
+  font-size: rem(20px);
+  color: $color-gray-900;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
