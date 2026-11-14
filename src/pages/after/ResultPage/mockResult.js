@@ -16,6 +16,7 @@ export const mockResult = {
   audioUrl: null,
   recordingSeconds: 1680,
   isScriptLocked: false,
+  shareCode: 'mock-share-code',
   agendas: [
     {
       id: 1,

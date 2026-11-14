@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react';
 import { copyCheck, linkWhite } from '@/assets';
 import { BottomBar } from '@/components/common/BottomBar/BottomBar';
+import { ConfirmModal } from '@/components/common/ConfirmModal/ConfirmModal';
 import { Header } from '@/components/common/Header/Header';
 import { LoadingView } from '@/components/common/LoadingView/LoadingView';
 import { Toast } from '@/components/common/Toast/Toast';
@@ -30,6 +31,7 @@ export const ResultPage = () => {
   // 다시 복사하면 토스트를 새로 띄워 닫히는 시간을 처음부터 센다.
   const [copyToastKey, setCopyToastKey] = useState(null);
   const [scriptHighlight, setScriptHighlight] = useState(null);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
   const player = useAudioPlayer(meeting.recordingSeconds);
 
@@ -60,7 +62,11 @@ export const ResultPage = () => {
     player.play();
   };
 
-  const handleShare = () => {};
+  const handleConfirmShare = () => {
+    // TODO: 공유 링크 생성 API 연동 후 받은 링크로 교체
+    copyText(`${window.location.origin}/share/${meeting.shareCode}`);
+    setIsShareModalOpen(false);
+  };
 
   return (
     <div className={styles.page}>
@@ -102,7 +108,7 @@ export const ResultPage = () => {
 
           <BottomBar
             icon={linkWhite}
-            onClick={handleShare}
+            onClick={() => setIsShareModalOpen(true)}
             header={
               tab === 'script' && (
                 <AudioPlayer
@@ -128,6 +134,16 @@ export const ResultPage = () => {
             결과 공유하기
           </BottomBar>
         </>
+      )}
+
+      {isShareModalOpen && (
+        <ConfirmModal
+          title="링크를 공유할까요?"
+          description="회의 링크 공유 시 대화 초안과 녹음이 링크를 가진 사람에게 공개돼요."
+          confirmLabel="공유"
+          onCancel={() => setIsShareModalOpen(false)}
+          onConfirm={handleConfirmShare}
+        />
       )}
     </div>
   );
