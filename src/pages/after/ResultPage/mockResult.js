@@ -15,6 +15,7 @@ export const mockResult = {
   summaryStatus: 'done',
   audioUrl: null,
   recordingSeconds: 1680,
+  isScriptLocked: false,
   agendas: [
     {
       id: 1,

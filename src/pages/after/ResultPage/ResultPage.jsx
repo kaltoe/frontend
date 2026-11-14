@@ -94,6 +94,7 @@ export const ResultPage = () => {
               <ScriptTab
                 meeting={meeting}
                 highlight={scriptHighlight}
+                isLocked={meeting.isScriptLocked}
                 onSelect={handleSelectScript}
               />
             )}
