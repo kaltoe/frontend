@@ -8,6 +8,7 @@ import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { AgendaResultList } from './components/AgendaResultList';
 import { MeetingInfoCard } from './components/MeetingInfoCard';
 import { ResultTabs } from './components/ResultTabs';
+import { ScriptTab } from './components/ScriptTab';
 import { SummaryTab } from './components/SummaryTab';
 import { TimerRing } from './components/TimerRing';
 import { RESULT_TABS, SUMMARY_STATUS } from './constants';
@@ -26,6 +27,7 @@ export const ResultPage = () => {
   const [summaryStatus, setSummaryStatus] = useState(meeting.summaryStatus);
   // 다시 복사하면 토스트를 새로 띄워 닫히는 시간을 처음부터 센다.
   const [copyToastKey, setCopyToastKey] = useState(null);
+  const [scriptHighlight, setScriptHighlight] = useState(null);
 
   const timeResult = getTimeResult(meeting.agendas);
 
@@ -46,6 +48,10 @@ export const ResultPage = () => {
   };
 
   const handleCopySummary = () => copyText(getSummaryText(meeting.agendas));
+
+  const handleSelectScript = (target) => {
+    setScriptHighlight(target);
+  };
 
   const handleShare = () => {};
 
@@ -76,7 +82,13 @@ export const ResultPage = () => {
                 onCopy={handleCopySummary}
               />
             )}
-            {tab === 'script' && <MeetingInfoCard meeting={meeting} />}
+            {tab === 'script' && (
+              <ScriptTab
+                meeting={meeting}
+                highlight={scriptHighlight}
+                onSelect={handleSelectScript}
+              />
+            )}
           </main>
 
           <BottomBar

@@ -1,0 +1,75 @@
+@use '@/styles/variables' as *;
+@use '@/styles/function' as *;
+
+.script {
+  @include flex(column, stretch, flex-start, 12px);
+}
+
+.group {
+  @include flex(column, stretch, flex-start, 6px);
+}
+
+.agendaButton {
+  align-self: flex-start;
+  padding: 0;
+  border: none;
+  background: transparent;
+  font-size: $font-size-12;
+  line-height: 1.55;
+  color: $color-gray-500;
+  text-align: left;
+  cursor: pointer;
+}
+
+.agendaActive {
+  font-weight: $font-weight-bold;
+  color: $color-primary-500;
+}
+
+.lines {
+  @include flex(column, stretch, flex-start, 6px);
+  list-style: none;
+}
+
+.line {
+  @include flex(row, flex-start, flex-start, 8px);
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.time {
+  @include flex(row, center, flex-start);
+  flex-shrink: 0;
+  width: 25px;
+  height: 20px;
+  font-size: $font-size-10;
+  line-height: 1.5;
+  letter-spacing: -0.01em;
+  color: $color-gray-500;
+}
+
+.text {
+  flex: 1;
+  min-width: 0;
+  font-size: $font-size-14;
+  line-height: 1.55;
+  color: $color-gray-900;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.speaker {
+  font-weight: $font-weight-bold;
+  color: $color-gray-800;
+}
+
+.highlight {
+  border-radius: 3px;
+  background-color: $color-primary-100;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
