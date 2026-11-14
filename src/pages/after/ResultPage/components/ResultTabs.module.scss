@@ -1,0 +1,34 @@
+@use '@/styles/variables' as *;
+@use '@/styles/function' as *;
+
+.tabs {
+  @include flex(row, center, flex-start, 4px);
+  flex-shrink: 0;
+  height: 40px;
+  padding: 4px;
+  border: 0.5px solid $color-gray-500;
+  border-radius: 999px;
+  background-color: $color-gray-white;
+}
+
+.tab {
+  @include flex;
+  flex: 1;
+  min-width: 0;
+  height: 32px;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  font-size: $font-size-14;
+  line-height: 1.22;
+  letter-spacing: -0.03em;
+  color: $color-gray-500;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.tabSelected {
+  background-color: $color-primary-100;
+  font-weight: $font-weight-bold;
+  color: $color-gray-900;
+}

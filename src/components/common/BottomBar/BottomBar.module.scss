@@ -12,6 +12,18 @@
   background-color: $color-gray-white;
 }
 
+.withHeader {
+  gap: 10px;
+  padding-top: 8px;
+}
+
+.floating {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+}
+
 .notice {
   @include flex(row, center, center, 4px);
   font-size: $font-size-12;

@@ -1,0 +1,35 @@
+@use '@/styles/variables' as *;
+@use '@/styles/function' as *;
+
+// 흐리게 가린 회의 내용 위, 화면 가운데에 띄운다.
+.notice {
+  @include flex(column, center, center, 12px);
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  z-index: 1;
+  width: min(325px, calc(100% - 40px));
+  padding: 20px 20px 16px;
+  border: 0.5px solid $color-gray-400;
+  border-radius: 16px;
+  background-color: $color-gray-white;
+  transform: translate(-50%, -50%);
+}
+
+.text {
+  @include flex(column, center, flex-start, 8px);
+  line-height: 1.22;
+  letter-spacing: -0.03em;
+  text-align: center;
+}
+
+.title {
+  font-size: $font-size-18;
+  font-weight: $font-weight-bold;
+  color: $color-gray-900;
+}
+
+.description {
+  font-size: $font-size-14;
+  color: $color-gray-500;
+}

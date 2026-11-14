@@ -1,0 +1,29 @@
+@use '@/styles/variables' as *;
+@use '@/styles/function' as *;
+
+.toast {
+  @include flex(row, center, flex-start, 8px);
+  height: 52px;
+  padding: 0 16px;
+  border-radius: 12px;
+  background-color: $color-primary-100;
+  filter: drop-shadow(0 2px 1px rgba(#000, 0.05));
+}
+
+.message {
+  @include flex(row, center, flex-start, 8px);
+  min-width: 165px;
+  font-size: $font-size-14;
+  line-height: 1.55;
+  color: $color-gray-800;
+  white-space: nowrap;
+}
+
+.closeButton {
+  @include flex;
+  flex-shrink: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
