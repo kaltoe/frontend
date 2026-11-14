@@ -4,6 +4,17 @@ export const mockMeeting = {
   status: 'IN_PROGRESS', // 'IN_PROGRESS' | 'PAUSED' | 'ENDED'
   connectedCount: 3, // 지금 접속 중인 인원
 
+  // 팀원 초대 팝업 (#21)
+  invite: {
+    code: 'K7Q2MX',
+    url: 'https://kaltoe.app/m/K7Q2MX',
+    expiresAt: '2026-11-17T14:00:00+09:00',
+  },
+
+  // TODO: 진행자 복구 키 (#22)는 API-04에 없고 API-02(회의 만들기) 응답에만 있음
+  // 회의 만들기 화면에서 받아 저장해두고 여기서 꺼내 써야 함. 없으면 팝업에서 숨김
+  hostRecoveryKey: 'K7QM-2XPA',
+
   // TODO: API-04 응답에 meetingMode가 없음. 참여자도 받을 수 있게 추가 요청 필요(확인 필요)
   meetingMode: 'IN_PERSON', // 'IN_PERSON'(대면) | 'REMOTE'(비대면)
 

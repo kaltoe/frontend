@@ -1,10 +1,12 @@
 import { useCallback, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { meetingIconChatWarning, meetingIconMicOffSmall } from '@/assets';
 import { AgendaCard } from './components/AgendaCard';
 import { CaptionCard } from './components/CaptionCard';
 import { CaptionSheet } from './components/CaptionSheet';
 import { ConfirmModal } from './components/ConfirmModal';
 import { ControlBar } from './components/ControlBar';
+import { InviteModal } from './components/InviteModal';
 import { LiveHeader } from './components/LiveHeader';
 import { OfftopicModal } from './components/OfftopicModal';
 import { Toast } from './components/Toast';
@@ -46,6 +48,24 @@ export const LivePage = () => {
   const { meeting, pause, resume, toggleMic, closeOfftopic, dismissOfftopic } =
     useLiveMeeting();
   const offtopicEvent = meeting.activeOfftopicEvent;
+  const isHost = meeting.me.role === 'HOST';
+
+  // 팀원 초대 모달
+  const location = useLocation();
+  const [isInviteOpen, setIsInviteOpen] = useState(
+    () => isHost && Boolean(location.state?.openInvite),
+  );
+  const navigate = useNavigate();
+  const closeInvite = useCallback(() => {
+    setIsInviteOpen(false);
+
+    if (location.state?.openInvite) {
+      navigate(location.pathname + location.search, {
+        replace: true,
+        state: null,
+      });
+    }
+  }, [location, navigate]);
   const timer = useMeetingTimer(meeting.timer);
   const [isCaptionSheetOpen, setIsCaptionSheetOpen] = useState(false);
   const closeCaptionSheet = useCallback(() => setIsCaptionSheetOpen(false), []);
@@ -74,7 +94,6 @@ export const LivePage = () => {
   }
   const closeCaptionToast = useCallback(() => setCaptionToast(null), []);
 
-  const isHost = meeting.me.role === 'HOST';
   const isMicOn = meeting.me.micState === 'ON';
   const isPaused = timer.status === 'PAUSED';
   // 진행자는 항상, 참여자는 비대면일 때만 마이크를 켜고 끌 수 있음 (#30)
@@ -102,9 +121,7 @@ export const LivePage = () => {
       <LiveHeader
         title={meeting.title}
         participantCount={meeting.connectedCount}
-        onInviteClick={() => {
-          // TODO: 팀원 초대 팝업 (#21)
-        }}
+        onInviteClick={() => setIsInviteOpen(true)}
       />
 
       <main className={styles.content}>
@@ -148,6 +165,13 @@ export const LivePage = () => {
         {...CONFIRM_MODALS[confirmModal]}
         onConfirm={handleConfirm}
         onCancel={closeConfirmModal}
+      />
+
+      <InviteModal
+        open={isInviteOpen}
+        invite={meeting.invite}
+        recoveryKey={isHost ? meeting.hostRecoveryKey : null}
+        onClose={closeInvite}
       />
 
       {offtopicEvent && (

@@ -20,10 +20,15 @@ import meetingIconCaption from './meeting/icon-caption.svg';
 import meetingIconChatWarning from './meeting/icon-chat-warning.svg';
 import meetingIconChevron from './meeting/icon-chevron.svg';
 import meetingIconCloseSmall from './meeting/icon-close-small.svg';
+import meetingIconCopyCheck from './meeting/icon-copy-check.svg';
+import meetingIconCopy from './meeting/icon-copy.svg';
+import meetingIconCopySmall from './meeting/icon-copy-small.svg';
+import meetingIconLink from './meeting/icon-link.svg';
 import meetingIconMicOffBody from './meeting/icon-mic-off-body.svg';
 import meetingIconMicOffSlash from './meeting/icon-mic-off-slash.svg';
 import meetingIconMicOffSmall from './meeting/icon-mic-off-small.svg';
 import meetingIconMicOn from './meeting/icon-mic-on.svg';
+import meetingIconTime from './meeting/icon-time.svg';
 
 export {
   meetingControlMicDisabled,
@@ -42,8 +47,13 @@ export {
   meetingIconChatWarning,
   meetingIconChevron,
   meetingIconCloseSmall,
+  meetingIconCopy,
+  meetingIconCopyCheck,
+  meetingIconCopySmall,
+  meetingIconLink,
   meetingIconMicOffBody,
   meetingIconMicOffSlash,
   meetingIconMicOffSmall,
   meetingIconMicOn,
+  meetingIconTime,
 };

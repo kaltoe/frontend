@@ -2,11 +2,13 @@ import { useEffect } from 'react';
 import { meetingIconCloseSmall } from '@/assets';
 import styles from './Toast.module.scss';
 
+// variant: 'success' | 'warning' | 'danger'
 const DEFAULT_DURATION_MS = 5000;
 
 export const Toast = ({
   variant = 'warning',
   icon,
+  iconSize = 20,
   message,
   onClose,
   duration = DEFAULT_DURATION_MS,
@@ -24,7 +26,7 @@ export const Toast = ({
       aria-live="polite"
     >
       <div className={styles.content}>
-        {icon && <img src={icon} alt="" width={20} height={20} />}
+        {icon && <img src={icon} alt="" width={iconSize} height={iconSize} />}
         <p className={styles.message}>{message}</p>
       </div>
       <button

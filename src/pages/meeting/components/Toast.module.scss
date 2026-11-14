@@ -8,6 +8,19 @@
   border-radius: rem(12px);
   filter: drop-shadow(0 2px 1px rgba(#000, 0.05));
 
+  &.success {
+    width: fit-content;
+    background-color: $color-primary-100;
+
+    .content {
+      min-width: rem(165px);
+    }
+
+    .message {
+      color: $color-gray-800;
+    }
+  }
+
   &.danger {
     background-color: $color-danger-50;
   }
