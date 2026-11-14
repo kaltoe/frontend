@@ -3,6 +3,7 @@ import { meetingIconChatWarning, meetingIconMicOffSmall } from '@/assets';
 import { AgendaCard } from './components/AgendaCard';
 import { CaptionCard } from './components/CaptionCard';
 import { CaptionSheet } from './components/CaptionSheet';
+import { ConfirmModal } from './components/ConfirmModal';
 import { ControlBar } from './components/ControlBar';
 import { LiveHeader } from './components/LiveHeader';
 import { Toast } from './components/Toast';
@@ -26,11 +27,28 @@ const CAPTION_TOASTS = {
   },
 };
 
+// 확인 모달 (#39 안건 전환, #40 회의 종료)
+const CONFIRM_MODALS = {
+  next: {
+    title: '안건을 전환할까요?',
+    description: '현재 안건은 종료되고 다음 안건으로 이어져요.',
+    variant: 'primary',
+  },
+  end: {
+    title: '회의를 종료할까요?',
+    description: '지금까지의 회의 내용으로만 기록돼요.',
+    variant: 'danger',
+  },
+};
+
 export const LivePage = () => {
   const { meeting, pause, resume, toggleMic } = useLiveMeeting();
   const timer = useMeetingTimer(meeting.timer);
   const [isCaptionSheetOpen, setIsCaptionSheetOpen] = useState(false);
   const closeCaptionSheet = useCallback(() => setIsCaptionSheetOpen(false), []);
+  // 'next' | 'end' | null
+  const [confirmModal, setConfirmModal] = useState(null);
+  const closeConfirmModal = useCallback(() => setConfirmModal(null), []);
 
   const currentIndex = meeting.agendas.findIndex(
     (agenda) => agenda.agendaId === timer.currentAgendaId,
@@ -65,6 +83,15 @@ export const LivePage = () => {
   const handlePauseToggle = () => {
     if (isPaused) resume(timer);
     else pause(timer);
+  };
+
+  const handleConfirm = () => {
+    if (confirmModal === 'next') {
+      // TODO: API-07 POST /meetings/{meetingId}/agendas/next
+    } else if (confirmModal === 'end') {
+      // TODO: API-08 POST /meetings/{meetingId}/end → 회의 후 화면으로 이동
+    }
+    setConfirmModal(null);
   };
 
   return (
@@ -109,12 +136,15 @@ export const LivePage = () => {
         isLastAgenda={currentIndex === meeting.agendas.length - 1}
         onMicToggle={toggleMic}
         onPauseToggle={handlePauseToggle}
-        onNext={() => {
-          // TODO: 안건 전환 확인 모달 → API-07 (#39)
-        }}
-        onEnd={() => {
-          // TODO: 회의 종료 확인 모달 → API-08 (#40)
-        }}
+        onNext={() => setConfirmModal('next')}
+        onEnd={() => setConfirmModal('end')}
+      />
+
+      <ConfirmModal
+        open={confirmModal !== null}
+        {...CONFIRM_MODALS[confirmModal]}
+        onConfirm={handleConfirm}
+        onCancel={closeConfirmModal}
       />
 
       {currentAgenda && (
