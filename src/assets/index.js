@@ -3,10 +3,6 @@
 // 2. 여기서 import 후 아래 export에 이름 추가
 // 사용: import { meetingIconCaption } from '@/assets';
 
-// 공통
-import commonIconLoading from './common/icon-loading.svg';
-import commonLogoRun from './common/logo-run.svg';
-
 // 회의 라이브 화면
 import meetingControlMicDisabled from './meeting/control-mic-disabled.svg';
 import meetingControlMicOffBody from './meeting/control-mic-off-body.svg';
@@ -24,19 +20,21 @@ import meetingIconCaption from './meeting/icon-caption.svg';
 import meetingIconChatWarning from './meeting/icon-chat-warning.svg';
 import meetingIconChevron from './meeting/icon-chevron.svg';
 import meetingIconCloseSmall from './meeting/icon-close-small.svg';
-import meetingIconCopyCheck from './meeting/icon-copy-check.svg';
 import meetingIconCopy from './meeting/icon-copy.svg';
+import meetingIconCopyCheck from './meeting/icon-copy-check.svg';
 import meetingIconCopySmall from './meeting/icon-copy-small.svg';
 import meetingIconLink from './meeting/icon-link.svg';
+import meetingIconLinkBroken from './meeting/icon-link-broken.svg';
+import meetingIconLoading from './meeting/icon-loading.svg';
 import meetingIconMicOffBody from './meeting/icon-mic-off-body.svg';
 import meetingIconMicOffSlash from './meeting/icon-mic-off-slash.svg';
 import meetingIconMicOffSmall from './meeting/icon-mic-off-small.svg';
 import meetingIconMicOn from './meeting/icon-mic-on.svg';
 import meetingIconTime from './meeting/icon-time.svg';
+import meetingLogoRun from './meeting/logo-run.svg';
+import meetingLogoRunWhite from './meeting/logo-run-white.svg';
 
 export {
-  commonIconLoading,
-  commonLogoRun,
   meetingControlMicDisabled,
   meetingControlMicOffBody,
   meetingControlMicOffSlash,
@@ -57,9 +55,13 @@ export {
   meetingIconCopyCheck,
   meetingIconCopySmall,
   meetingIconLink,
+  meetingIconLinkBroken,
+  meetingIconLoading,
   meetingIconMicOffBody,
   meetingIconMicOffSlash,
   meetingIconMicOffSmall,
   meetingIconMicOn,
   meetingIconTime,
+  meetingLogoRun,
+  meetingLogoRunWhite,
 };

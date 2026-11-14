@@ -5,8 +5,12 @@ import { mockMeeting } from '../mockMeeting';
 export const useLiveMeeting = () => {
   const [meeting, setMeeting] = useState(mockMeeting);
 
-  // 연결 상태: 'loading'(처음 불러옴) | 'connected' | 'reconnecting'
-  // TODO: API-04로 불러오는 동안 'loading', WS-01이 끊기면 'reconnecting'
+  // 연결 상태
+  // - 'loading': 처음 불러오는 중 → 로딩 화면
+  // - 'connected': 회의 화면
+  // - 'reconnecting': 끊겨서 다시 연결 중 → 로딩 화면
+  // - 'error': 없거나 끝난 회의, 만료된 링크 → 에러 화면
+  // TODO: API-04로 불러오는 동안 'loading', 실패(404 등)하면 'error', WS-01이 끊기면 'reconnecting'
   // eslint-disable-next-line no-unused-vars
   const [connection, setConnection] = useState('connected');
 

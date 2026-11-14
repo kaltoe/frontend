@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { LoadingScreen } from '@/components/common/LoadingScreen';
+import { ErrorScreen } from './components/ErrorScreen';
+import { LoadingScreen } from './components/LoadingScreen';
 import { meetingIconChatWarning, meetingIconMicOffSmall } from '@/assets';
 import { AgendaCard } from './components/AgendaCard';
 import { CaptionCard } from './components/CaptionCard';
@@ -124,6 +125,8 @@ export const LivePage = () => {
     setConfirmModal(null);
   };
 
+  // 만료된 링크면 에러
+  if (connection === 'error') return <ErrorScreen />;
   if (connection !== 'connected') return <LoadingScreen />;
 
   return (
