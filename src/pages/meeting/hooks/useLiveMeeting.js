@@ -36,5 +36,22 @@ export const useLiveMeeting = () => {
     }));
   }, []);
 
-  return { meeting, pause, resume, toggleMic };
+  // 닫기 버튼, 자동 닫힘
+  const closeOfftopic = useCallback(() => {
+    setMeeting((prev) => ({ ...prev, activeOfftopicEvent: null }));
+  }, []);
+
+  // 관련 있는 이야기에요. → 모든 화면에서 닫힘
+  const dismissOfftopic = useCallback(() => {
+    setMeeting((prev) => ({ ...prev, activeOfftopicEvent: null }));
+  }, []);
+
+  return {
+    meeting,
+    pause,
+    resume,
+    toggleMic,
+    closeOfftopic,
+    dismissOfftopic,
+  };
 };

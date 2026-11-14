@@ -6,6 +6,7 @@ import { CaptionSheet } from './components/CaptionSheet';
 import { ConfirmModal } from './components/ConfirmModal';
 import { ControlBar } from './components/ControlBar';
 import { LiveHeader } from './components/LiveHeader';
+import { OfftopicModal } from './components/OfftopicModal';
 import { Toast } from './components/Toast';
 import { TotalTimer } from './components/TotalTimer';
 import { useLiveMeeting } from './hooks/useLiveMeeting';
@@ -42,7 +43,9 @@ const CONFIRM_MODALS = {
 };
 
 export const LivePage = () => {
-  const { meeting, pause, resume, toggleMic } = useLiveMeeting();
+  const { meeting, pause, resume, toggleMic, closeOfftopic, dismissOfftopic } =
+    useLiveMeeting();
+  const offtopicEvent = meeting.activeOfftopicEvent;
   const timer = useMeetingTimer(meeting.timer);
   const [isCaptionSheetOpen, setIsCaptionSheetOpen] = useState(false);
   const closeCaptionSheet = useCallback(() => setIsCaptionSheetOpen(false), []);
@@ -146,6 +149,16 @@ export const LivePage = () => {
         onConfirm={handleConfirm}
         onCancel={closeConfirmModal}
       />
+
+      {offtopicEvent && (
+        <OfftopicModal
+          key={offtopicEvent.eventId}
+          agendaTitle={offtopicEvent.agendaTitle}
+          autoCloseSeconds={offtopicEvent.autoCloseSeconds}
+          onRelated={dismissOfftopic}
+          onClose={closeOfftopic}
+        />
+      )}
 
       {currentAgenda && (
         <CaptionSheet

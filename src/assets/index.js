@@ -15,6 +15,7 @@ import meetingControlPauseDisabled from './meeting/control-pause-disabled.svg';
 import meetingControlPlay from './meeting/control-play.svg';
 import meetingDotDanger from './meeting/dot-danger.svg';
 import meetingDotWarning from './meeting/dot-warning.svg';
+import meetingIconBell from './meeting/icon-bell.svg';
 import meetingIconCaption from './meeting/icon-caption.svg';
 import meetingIconChatWarning from './meeting/icon-chat-warning.svg';
 import meetingIconChevron from './meeting/icon-chevron.svg';
@@ -36,6 +37,7 @@ export {
   meetingControlPlay,
   meetingDotDanger,
   meetingDotWarning,
+  meetingIconBell,
   meetingIconCaption,
   meetingIconChatWarning,
   meetingIconChevron,

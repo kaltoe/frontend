@@ -88,4 +88,6 @@ export const mockMeeting = {
 
   // 인식 중인 자막 (WS-01 transcript.partial). 확정되면 transcripts로 옮겨지고 null
   partialTranscript: null,
+  // 현재 떠 있는 사담 경고 (WS-01 offtopic.warning의 data와 같음). 없으면 null
+  activeOfftopicEvent: null,
 };
