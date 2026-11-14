@@ -1,0 +1,59 @@
+@use '@/styles/variables' as *;
+@use '@/styles/function' as *;
+
+.page {
+  position: relative;
+  @include flex(column, stretch, flex-start);
+  min-height: 100dvh;
+}
+
+.status {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  @include flex(column, center, center, rem(12px));
+  width: calc(100% - #{rem(40px)});
+  max-width: rem(273px);
+  transform: translate(-50%, -50%);
+}
+
+.title {
+  font-size: $font-size-18;
+  font-weight: $font-weight-bold;
+  line-height: 1.22;
+  letter-spacing: -0.03em;
+  color: $color-gray-900;
+  text-align: center;
+  word-break: keep-all;
+}
+
+.bottomBar {
+  position: sticky;
+  bottom: 0;
+  margin-top: auto;
+  padding: rem(12px) rem(20px) calc(#{rem(12px)} + env(safe-area-inset-bottom));
+  background-color: $color-gray-white;
+  border-top: 0.5px solid $color-gray-200;
+}
+
+.startButton {
+  @include flex($gap: rem(8px));
+  width: 100%;
+  height: rem(44px);
+  padding: 0;
+  font-size: $font-size-16;
+  font-weight: $font-weight-bold;
+  line-height: 1.22;
+  letter-spacing: -0.03em;
+  color: $color-gray-white;
+  background-color: $color-primary-400;
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+
+  @media (hover: hover) {
+    &:hover {
+      background-color: $color-primary-400-hover;
+    }
+  }
+}

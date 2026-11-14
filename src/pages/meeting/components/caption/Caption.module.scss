@@ -1,0 +1,59 @@
+@use '@/styles/variables' as *;
+@use '@/styles/function' as *;
+
+.badge {
+  @include flex($gap: rem(4px));
+  flex-shrink: 0;
+  padding: rem(4px) rem(8px);
+  font-size: $font-size-10;
+  font-weight: $font-weight-semibold;
+  line-height: 1.22;
+  letter-spacing: -0.03em;
+  white-space: nowrap;
+  border-radius: rem(12px);
+
+  &.stopped,
+  &.delayed {
+    color: $color-warning-500;
+    background-color: $color-warning-50;
+  }
+
+  &.noAudio {
+    color: $color-danger-500;
+    background-color: $color-danger-50;
+  }
+}
+
+.line {
+  display: flex;
+  align-items: flex-start;
+  gap: rem(8px);
+}
+
+.time {
+  flex-shrink: 0;
+  width: rem(27px);
+  font-size: $font-size-10;
+  line-height: 1.5;
+  letter-spacing: -0.01em;
+  color: $color-gray-500;
+  font-variant-numeric: tabular-nums;
+}
+
+.sheet .time {
+  @include flex(row, center, flex-start);
+  height: rem(20px);
+}
+
+.text {
+  flex: 1;
+  min-width: 0;
+  font-size: $font-size-14;
+  line-height: 1.55;
+  color: $color-gray-900;
+  word-break: break-all;
+}
+
+.speaker {
+  font-weight: $font-weight-bold;
+}

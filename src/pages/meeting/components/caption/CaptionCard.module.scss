@@ -1,0 +1,75 @@
+@use '@/styles/variables' as *;
+@use '@/styles/function' as *;
+
+.card {
+  @include flex(column, stretch, flex-start, rem(16px));
+  padding: rem(16px);
+  background-color: $color-gray-white;
+  border: 0.5px solid $color-gray-500;
+  border-radius: rem(16px);
+}
+
+.header {
+  @include flex($justify-content: space-between, $gap: rem(8px));
+}
+
+.titleGroup {
+  @include flex($gap: rem(12px));
+  min-width: 0;
+}
+
+.titleWithIcon {
+  @include flex($gap: rem(6px));
+}
+
+.title {
+  font-size: $font-size-14;
+  font-weight: $font-weight-bold;
+  line-height: 1.22;
+  letter-spacing: -0.03em;
+  color: $color-gray-900;
+  white-space: nowrap;
+}
+
+// 전체 보기 버튼
+.more {
+  @include flex($gap: rem(4px));
+  flex-shrink: 0;
+  padding: 0;
+  font-size: $font-size-10;
+  line-height: 1.5;
+  letter-spacing: -0.01em;
+  color: $color-gray-500;
+  background: none;
+  border: none;
+  cursor: pointer;
+
+  // 음성 미감지일 때 비활성화 (피그마: 모양은 그대로)
+  &:disabled {
+    cursor: default;
+  }
+}
+
+.chevron {
+  @include flex;
+  width: rem(10.6px);
+  height: rem(6px);
+
+  img {
+    flex-shrink: 0;
+    transform: rotate(90deg);
+  }
+}
+
+.list {
+  list-style: none;
+}
+
+.empty {
+  // 피그마: 카드 헤더와 20px 간격(카드 기본 간격 16px + 4px), 가운데 정렬
+  margin-top: rem(4px);
+  font-size: $font-size-12;
+  line-height: 1.55;
+  color: $color-gray-400;
+  text-align: center;
+}

@@ -1,0 +1,56 @@
+@use '@/styles/variables' as *;
+@use '@/styles/function' as *;
+
+.toast {
+  @include flex($justify-content: space-between, $gap: rem(8px));
+  min-height: rem(52px);
+  padding: rem(8px) rem(16px);
+  border-radius: rem(12px);
+  filter: drop-shadow(0 2px 1px rgba(#000, 0.05));
+
+  &.success {
+    width: fit-content;
+    background-color: $color-primary-100;
+
+    .content {
+      min-width: rem(165px);
+    }
+
+    .message {
+      color: $color-gray-800;
+    }
+  }
+
+  &.danger {
+    background-color: $color-danger-50;
+  }
+
+  &.warning {
+    background-color: $color-warning-bg;
+  }
+}
+
+.content {
+  @include flex($justify-content: flex-start, $gap: rem(8px));
+  min-width: 0;
+
+  img {
+    flex-shrink: 0;
+  }
+}
+
+.message {
+  font-size: $font-size-14;
+  line-height: 1.55;
+  color: $color-gray-900;
+  word-break: keep-all;
+}
+
+.close {
+  @include flex;
+  flex-shrink: 0;
+  padding: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+}

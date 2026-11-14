@@ -45,6 +45,39 @@ import trialDotFilled from '@/assets/before/trial-dot-filled.svg';
 import trialDotOutline from '@/assets/before/trial-dot-outline.svg';
 import trialLine from '@/assets/before/trial-line.svg';
 
+// 회의 라이브 화면
+import meetingControlMicDisabled from './meeting/control-mic-disabled.svg';
+import meetingControlMicOffBody from './meeting/control-mic-off-body.svg';
+import meetingControlMicOffSlash from './meeting/control-mic-off-slash.svg';
+import meetingControlMicOn from './meeting/control-mic-on.svg';
+import meetingControlNext from './meeting/control-next.svg';
+import meetingControlNextDisabled from './meeting/control-next-disabled.svg';
+import meetingControlPause from './meeting/control-pause.svg';
+import meetingControlPauseDisabled from './meeting/control-pause-disabled.svg';
+import meetingControlPlay from './meeting/control-play.svg';
+import meetingDotDanger from './meeting/dot-danger.svg';
+import meetingDotWarning from './meeting/dot-warning.svg';
+import meetingIconBell from './meeting/icon-bell.svg';
+import meetingIconCaption from './meeting/icon-caption.svg';
+import meetingIconChatWarning from './meeting/icon-chat-warning.svg';
+import meetingIconChevron from './meeting/icon-chevron.svg';
+import meetingIconCloseSmall from './meeting/icon-close-small.svg';
+import meetingIconCopy from './meeting/icon-copy.svg';
+import meetingIconCopyCheck from './meeting/icon-copy-check.svg';
+import meetingIconCopySmall from './meeting/icon-copy-small.svg';
+import meetingIconLink from './meeting/icon-link.svg';
+import meetingIconLinkBroken from './meeting/icon-link-broken.svg';
+import meetingIconLoading from './meeting/icon-loading.svg';
+import meetingIconMicOffBody from './meeting/icon-mic-off-body.svg';
+import meetingIconMicOffSlash from './meeting/icon-mic-off-slash.svg';
+import meetingIconMicOffSmall from './meeting/icon-mic-off-small.svg';
+import meetingIconMicOn from './meeting/icon-mic-on.svg';
+import meetingIconTime from './meeting/icon-time.svg';
+import meetingLogoRun from './meeting/logo-run.svg';
+import meetingLogoRunWhite from './meeting/logo-run-white.svg';
+import meetingSoundOfftopic from './meeting/sound-offtopic.mp3';
+import meetingSoundTimeUp from './meeting/sound-time-up.mp3';
+
 // 임포트한 이미지 및 아이콘 내보내기
 export {
   addAgenda,
@@ -91,4 +124,35 @@ export {
   trialDotFilled,
   trialDotOutline,
   trialLine,
+  meetingControlMicDisabled,
+  meetingControlMicOffBody,
+  meetingControlMicOffSlash,
+  meetingControlMicOn,
+  meetingControlNext,
+  meetingControlNextDisabled,
+  meetingControlPause,
+  meetingControlPauseDisabled,
+  meetingControlPlay,
+  meetingDotDanger,
+  meetingDotWarning,
+  meetingIconBell,
+  meetingIconCaption,
+  meetingIconChatWarning,
+  meetingIconChevron,
+  meetingIconCloseSmall,
+  meetingIconCopy,
+  meetingIconCopyCheck,
+  meetingIconCopySmall,
+  meetingIconLink,
+  meetingIconLinkBroken,
+  meetingIconLoading,
+  meetingIconMicOffBody,
+  meetingIconMicOffSlash,
+  meetingIconMicOffSmall,
+  meetingIconMicOn,
+  meetingIconTime,
+  meetingLogoRun,
+  meetingLogoRunWhite,
+  meetingSoundOfftopic,
+  meetingSoundTimeUp,
 };
