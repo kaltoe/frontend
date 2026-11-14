@@ -5,6 +5,11 @@ import { mockMeeting } from '../mockMeeting';
 export const useLiveMeeting = () => {
   const [meeting, setMeeting] = useState(mockMeeting);
 
+  // 연결 상태: 'loading'(처음 불러옴) | 'connected' | 'reconnecting'
+  // TODO: API-04로 불러오는 동안 'loading', WS-01이 끊기면 'reconnecting'
+  // eslint-disable-next-line no-unused-vars
+  const [connection, setConnection] = useState('connected');
+
   // 시간을 새 스냅샷으로 고정
   const replaceTimer = (prev, currentTimer, status) => ({
     ...prev,
@@ -47,6 +52,7 @@ export const useLiveMeeting = () => {
   }, []);
 
   return {
+    connection,
     meeting,
     pause,
     resume,

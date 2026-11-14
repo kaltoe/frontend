@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { LoadingScreen } from '@/components/common/LoadingScreen';
 import { meetingIconChatWarning, meetingIconMicOffSmall } from '@/assets';
 import { AgendaCard } from './components/AgendaCard';
 import { CaptionCard } from './components/CaptionCard';
@@ -45,8 +46,15 @@ const CONFIRM_MODALS = {
 };
 
 export const LivePage = () => {
-  const { meeting, pause, resume, toggleMic, closeOfftopic, dismissOfftopic } =
-    useLiveMeeting();
+  const {
+    connection,
+    meeting,
+    pause,
+    resume,
+    toggleMic,
+    closeOfftopic,
+    dismissOfftopic,
+  } = useLiveMeeting();
   const offtopicEvent = meeting.activeOfftopicEvent;
   const isHost = meeting.me.role === 'HOST';
 
@@ -115,6 +123,8 @@ export const LivePage = () => {
     }
     setConfirmModal(null);
   };
+
+  if (connection !== 'connected') return <LoadingScreen />;
 
   return (
     <div className={styles.page}>

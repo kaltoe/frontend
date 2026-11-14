@@ -3,6 +3,10 @@
 // 2. 여기서 import 후 아래 export에 이름 추가
 // 사용: import { meetingIconCaption } from '@/assets';
 
+// 공통
+import commonIconLoading from './common/icon-loading.svg';
+import commonLogoRun from './common/logo-run.svg';
+
 // 회의 라이브 화면
 import meetingControlMicDisabled from './meeting/control-mic-disabled.svg';
 import meetingControlMicOffBody from './meeting/control-mic-off-body.svg';
@@ -31,6 +35,8 @@ import meetingIconMicOn from './meeting/icon-mic-on.svg';
 import meetingIconTime from './meeting/icon-time.svg';
 
 export {
+  commonIconLoading,
+  commonLogoRun,
   meetingControlMicDisabled,
   meetingControlMicOffBody,
   meetingControlMicOffSlash,
