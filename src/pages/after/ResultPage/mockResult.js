@@ -12,6 +12,7 @@ export const mockResult = {
   participantCount: 3,
   startedAt: '2026-11-08T14:00:00',
   endedAt: '2026-11-08T14:28:00',
+  summaryStatus: 'done',
   agendas: [
     {
       id: 1,

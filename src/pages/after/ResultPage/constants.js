@@ -3,3 +3,9 @@ export const RESULT_TABS = [
   { value: 'summary', label: '3줄 요약' },
   { value: 'script', label: '회의 내용' },
 ];
+
+export const SUMMARY_STATUS = {
+  DONE: 'done',
+  PENDING: 'pending',
+  FAILED: 'failed',
+};

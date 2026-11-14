@@ -7,8 +7,9 @@ import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { AgendaResultList } from './components/AgendaResultList';
 import { MeetingInfoCard } from './components/MeetingInfoCard';
 import { ResultTabs } from './components/ResultTabs';
+import { SummaryTab } from './components/SummaryTab';
 import { TimerRing } from './components/TimerRing';
-import { RESULT_TABS } from './constants';
+import { RESULT_TABS, SUMMARY_STATUS } from './constants';
 import { getTimeResult } from './getTimeResult';
 import { mockResult } from './mockResult';
 import styles from './ResultPage.module.scss';
@@ -20,7 +21,14 @@ export const ResultPage = () => {
   const isOnline = useOnlineStatus();
   const [tab, setTab] = useState(RESULT_TABS[0].value);
 
+  const [summaryStatus, setSummaryStatus] = useState(meeting.summaryStatus);
+
   const timeResult = getTimeResult(meeting.agendas);
+
+  const handleRetrySummary = () => {
+    // TODO: 요약 재생성 API 연동
+    setSummaryStatus(SUMMARY_STATUS.PENDING);
+  };
 
   const handleShare = () => {};
 
@@ -34,7 +42,7 @@ export const ResultPage = () => {
         <>
           <main className={styles.content}>
             <ResultTabs value={tab} onChange={setTab} />
-            {tab === 'result' ? (
+            {tab === 'result' && (
               <MeetingInfoCard meeting={meeting}>
                 <TimerRing timeResult={timeResult} />
                 <AgendaResultList
@@ -42,9 +50,15 @@ export const ResultPage = () => {
                   timeResult={timeResult}
                 />
               </MeetingInfoCard>
-            ) : (
-              <MeetingInfoCard meeting={meeting} />
             )}
+            {tab === 'summary' && (
+              <SummaryTab
+                meeting={meeting}
+                status={summaryStatus}
+                onRetry={handleRetrySummary}
+              />
+            )}
+            {tab === 'script' && <MeetingInfoCard meeting={meeting} />}
           </main>
 
           <BottomBar icon={linkWhite} onClick={handleShare}>
