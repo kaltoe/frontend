@@ -134,6 +134,10 @@ export const LivePage = () => {
         onInviteClick={() => setIsInviteOpen(true)}
       />
 
+      {/* TODO: '일시 정지 중' 배너 (#27). 디자인 받으면 추가
+          - isPaused일 때 진행자·참여자 모두에게 노출
+          - 일시정지 동안 타이머, STT 음성 수집, AI 사담 감지 중단 */}
+
       <main className={styles.content}>
         <div className={styles.timerArea}>
           <TotalTimer agendas={meeting.agendas} timer={timer} />
