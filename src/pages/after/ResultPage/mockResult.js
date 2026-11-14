@@ -13,6 +13,8 @@ export const mockResult = {
   startedAt: '2026-11-08T14:00:00',
   endedAt: '2026-11-08T14:28:00',
   summaryStatus: 'done',
+  audioUrl: null,
+  recordingSeconds: 1680,
   agendas: [
     {
       id: 1,

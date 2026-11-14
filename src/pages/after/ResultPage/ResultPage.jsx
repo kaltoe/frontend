@@ -6,6 +6,7 @@ import { LoadingView } from '@/components/common/LoadingView/LoadingView';
 import { Toast } from '@/components/common/Toast/Toast';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { AgendaResultList } from './components/AgendaResultList';
+import { AudioPlayer } from './components/AudioPlayer';
 import { MeetingInfoCard } from './components/MeetingInfoCard';
 import { ResultTabs } from './components/ResultTabs';
 import { ScriptTab } from './components/ScriptTab';
@@ -16,6 +17,7 @@ import { getSummaryText } from './getSummaryText';
 import { getTimeResult } from './getTimeResult';
 import { mockResult } from './mockResult';
 import styles from './ResultPage.module.scss';
+import { useAudioPlayer } from './useAudioPlayer';
 
 export const ResultPage = () => {
   // TODO: 회의 결과 API 연동 후 URL의 회의 ID로 받아온 값으로 교체
@@ -28,6 +30,8 @@ export const ResultPage = () => {
   // 다시 복사하면 토스트를 새로 띄워 닫히는 시간을 처음부터 센다.
   const [copyToastKey, setCopyToastKey] = useState(null);
   const [scriptHighlight, setScriptHighlight] = useState(null);
+
+  const player = useAudioPlayer(meeting.recordingSeconds);
 
   const timeResult = getTimeResult(meeting.agendas);
 
@@ -49,8 +53,11 @@ export const ResultPage = () => {
 
   const handleCopySummary = () => copyText(getSummaryText(meeting.agendas));
 
-  const handleSelectScript = (target) => {
+  // 누른 안건·발화의 시작 시점으로 녹음을 옮겨 재생한다.
+  const handleSelectScript = (target, seconds) => {
     setScriptHighlight(target);
+    player.seek(seconds);
+    player.play();
   };
 
   const handleShare = () => {};
@@ -58,6 +65,7 @@ export const ResultPage = () => {
   return (
     <div className={styles.page}>
       <Header />
+      <audio {...player.audioProps} src={meeting.audioUrl ?? undefined} />
 
       {!isOnline ? (
         <LoadingView />
@@ -94,6 +102,17 @@ export const ResultPage = () => {
           <BottomBar
             icon={linkWhite}
             onClick={handleShare}
+            header={
+              tab === 'script' && (
+                <AudioPlayer
+                  currentTime={player.currentTime}
+                  duration={player.duration}
+                  isPlaying={player.isPlaying}
+                  onTogglePlay={player.togglePlay}
+                  onSeek={player.seek}
+                />
+              )
+            }
             floating={
               copyToastKey && (
                 <Toast
