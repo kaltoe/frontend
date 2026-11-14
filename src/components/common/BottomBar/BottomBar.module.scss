@@ -12,6 +12,13 @@
   background-color: $color-gray-white;
 }
 
+.floating {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+}
+
 .notice {
   @include flex(row, center, center, 4px);
   font-size: $font-size-12;
