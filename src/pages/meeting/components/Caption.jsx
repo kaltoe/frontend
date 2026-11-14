@@ -5,9 +5,10 @@ import styles from './Caption.module.scss';
 const BADGES = {
   stopped: { label: '자막 중단', dot: meetingDotWarning },
   noAudio: { label: '음성 미감지', dot: meetingDotDanger },
+  delayed: { label: '자막 지연 중', dot: meetingDotWarning },
 };
 
-// 'stopped' | 'noAudio'일 때만 보임
+// 'stopped' | 'noAudio' | 'delayed'일 때만 보임
 export const CaptionBadge = ({ status }) => {
   const badge = BADGES[status];
   if (!badge) return null;

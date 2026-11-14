@@ -12,7 +12,8 @@
   white-space: nowrap;
   border-radius: rem(12px);
 
-  &.stopped {
+  &.stopped,
+  &.delayed {
     color: $color-warning-500;
     background-color: $color-warning-50;
   }
