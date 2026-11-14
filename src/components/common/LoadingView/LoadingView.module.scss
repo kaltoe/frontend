@@ -1,0 +1,28 @@
+@use '@/styles/variables' as *;
+@use '@/styles/function' as *;
+
+.loading {
+  @include flex(column, center, flex-start, 8px);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+}
+
+.loadingText {
+  font-size: $font-size-14;
+  line-height: 1.22;
+  letter-spacing: -0.03em;
+  color: $color-gray-500;
+  white-space: nowrap;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

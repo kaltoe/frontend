@@ -6,7 +6,6 @@ import {
   featureSummary,
   featureTime,
   link,
-  loading,
   plusGray,
   plusWhite,
   trialDotFilled,
@@ -15,6 +14,7 @@ import {
 } from '@/assets';
 import { BottomBar } from '@/components/common/BottomBar/BottomBar';
 import { Header } from '@/components/common/Header/Header';
+import { LoadingView } from '@/components/common/LoadingView/LoadingView';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { extractMeetingCode } from './extractMeetingCode';
 import styles from './MainPage.module.scss';
@@ -53,10 +53,7 @@ export const MainPage = () => {
       <Header />
 
       {isLoading ? (
-        <div className={styles.loading} role="status">
-          <img className={styles.spinner} src={loading} alt="" />
-          <p className={styles.loadingText}>로딩 중...</p>
-        </div>
+        <LoadingView />
       ) : (
         <main className={styles.content}>
           <section className={styles.intro}>
