@@ -1,4 +1,4 @@
-// 아이콘 및 이미지 파일들을 한 곳에서 관리하기 위한 인덱스 파일(Barrel export)
+// 아이콘·이미지·소리 파일들을 한 곳에서 관리하기 위한 인덱스 파일(Barrel export)
 // 1. 화면별 폴더(meeting 등)에 파일 추가
 // 2. 여기서 import 후 아래 export에 이름 추가
 // 사용: import { meetingIconCaption } from '@/assets';
@@ -33,6 +33,8 @@ import meetingIconMicOn from './meeting/icon-mic-on.svg';
 import meetingIconTime from './meeting/icon-time.svg';
 import meetingLogoRun from './meeting/logo-run.svg';
 import meetingLogoRunWhite from './meeting/logo-run-white.svg';
+import meetingSoundOfftopic from './meeting/sound-offtopic.mp3';
+import meetingSoundTimeUp from './meeting/sound-time-up.mp3';
 
 export {
   meetingControlMicDisabled,
@@ -64,4 +66,6 @@ export {
   meetingIconTime,
   meetingLogoRun,
   meetingLogoRunWhite,
+  meetingSoundOfftopic,
+  meetingSoundTimeUp,
 };

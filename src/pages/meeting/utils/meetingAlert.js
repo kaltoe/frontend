@@ -1,18 +1,16 @@
-const ALERT_TONES = {
-  timeUp: [
-    { frequency: 880, start: 0, duration: 0.15 },
-    { frequency: 880, start: 0.25, duration: 0.15 },
-    { frequency: 880, start: 0.5, duration: 0.15 },
-  ],
-  offtopic: [
-    { frequency: 988, start: 0, duration: 0.12 },
-    { frequency: 740, start: 0.16, duration: 0.2 },
-  ],
+import { meetingSoundOfftopic, meetingSoundTimeUp } from '@/assets';
+
+const ALERT_SOUNDS = {
+  timeUp: meetingSoundTimeUp,
+  offtopic: meetingSoundOfftopic,
 };
 
-const VOLUME = 0.3;
+// 0~1. 파일 자체 음량을 그대로 쓰려면 1
+const VOLUME = 1;
 
 let audioContext = null;
+// type별로 한 번만 불러와서 재사용
+const bufferPromises = {};
 
 const getAudioContext = () => {
   if (audioContext) return audioContext;
@@ -22,32 +20,40 @@ const getAudioContext = () => {
   return audioContext;
 };
 
-// 첫 터치, 키 입력 시 오디오 설정
+const loadSound = (type) => {
+  const context = getAudioContext();
+  if (!context || !ALERT_SOUNDS[type]) return Promise.resolve(null);
+  if (!bufferPromises[type]) {
+    bufferPromises[type] = fetch(ALERT_SOUNDS[type])
+      .then((response) => response.arrayBuffer())
+      .then((data) => context.decodeAudioData(data))
+      .catch(() => {
+        delete bufferPromises[type];
+        return null;
+      });
+  }
+  return bufferPromises[type];
+};
+
+// 첫 터치, 키 입력 시 오디오 설정 + 소리 파일 미리 불러오기
 export const unlockMeetingAlert = () => {
   const context = getAudioContext();
   if (context?.state === 'suspended') context.resume().catch(() => {});
+  Object.keys(ALERT_SOUNDS).forEach(loadSound);
 };
 
 // type: 'timeUp' | 'offtopic'
-export const playMeetingAlert = (type) => {
-  const tones = ALERT_TONES[type];
+export const playMeetingAlert = async (type) => {
   const context = getAudioContext();
-  if (!tones || !context || context.state !== 'running') return;
+  if (!context || context.state !== 'running') return;
 
-  const now = context.currentTime;
-  tones.forEach(({ frequency, start, duration }) => {
-    const oscillator = context.createOscillator();
-    const gain = context.createGain();
-    oscillator.type = 'sine';
-    oscillator.frequency.value = frequency;
+  const buffer = await loadSound(type);
+  if (!buffer) return;
 
-    const begin = now + start;
-    gain.gain.setValueAtTime(0, begin);
-    gain.gain.linearRampToValueAtTime(VOLUME, begin + 0.01);
-    gain.gain.exponentialRampToValueAtTime(0.0001, begin + duration);
-
-    oscillator.connect(gain).connect(context.destination);
-    oscillator.start(begin);
-    oscillator.stop(begin + duration + 0.02);
-  });
+  const source = context.createBufferSource();
+  const gain = context.createGain();
+  source.buffer = buffer;
+  gain.gain.value = VOLUME;
+  source.connect(gain).connect(context.destination);
+  source.start();
 };
