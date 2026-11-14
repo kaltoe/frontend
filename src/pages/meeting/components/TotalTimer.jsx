@@ -30,8 +30,6 @@ export const TotalTimer = ({ agendas, timer }) => {
 
   const urgentState = getUrgentState(totalState, agendaState);
 
-  // TODO: 00:00 도달 시 알림음·진동 (#23)
-
   return (
     <section className={styles.totalTimer} aria-label="전체 회의 타이머">
       <p className={`${styles.label} ${styles[totalState]}`}>

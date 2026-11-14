@@ -14,6 +14,7 @@ import { OfftopicModal } from './components/OfftopicModal';
 import { Toast } from './components/Toast';
 import { TotalTimer } from './components/TotalTimer';
 import { useLiveMeeting } from './hooks/useLiveMeeting';
+import { useMeetingAlerts } from './hooks/useMeetingAlerts';
 import { useMeetingTimer } from './hooks/useMeetingTimer';
 import { getCaptionStatus } from './utils/captionStatus';
 import styles from './LivePage.module.scss';
@@ -76,6 +77,13 @@ export const LivePage = () => {
     }
   }, [location, navigate]);
   const timer = useMeetingTimer(meeting.timer);
+
+  // 전체 시간 00:00, 사담 경고 알림음 (#23, #35)
+  useMeetingAlerts({
+    totalRemainingSeconds: timer.totalRemainingSeconds,
+    offtopicEventId: offtopicEvent?.eventId,
+  });
+
   const [isCaptionSheetOpen, setIsCaptionSheetOpen] = useState(false);
   const closeCaptionSheet = useCallback(() => setIsCaptionSheetOpen(false), []);
   // 'next' | 'end' | null
