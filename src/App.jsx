@@ -16,6 +16,7 @@ function App() {
           <Route path="/setup" element={<SetupPage />} />
           <Route path="/m/:code" element={<JoinPage />} />
           <Route path="/result/:meetingId" element={<ResultPage />} />
+          <Route path="/share/:shareCode" element={<ResultPage readOnly />} />
           <Route path="/invalid-link" element={<ExpiredLinkPage />} />
           {/* <Route path="/onboarding" element={<OnboardingPage />} /> */}
         </Route>

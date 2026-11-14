@@ -14,14 +14,16 @@ import { ScriptTab } from './components/ScriptTab';
 import { SummaryTab } from './components/SummaryTab';
 import { TimerRing } from './components/TimerRing';
 import { RESULT_TABS, SUMMARY_STATUS } from './constants';
+import { formatDate } from './formatResult';
 import { getSummaryText } from './getSummaryText';
 import { getTimeResult } from './getTimeResult';
 import { mockResult } from './mockResult';
 import styles from './ResultPage.module.scss';
 import { useAudioPlayer } from './useAudioPlayer';
 
-export const ResultPage = () => {
-  // TODO: 회의 결과 API 연동 후 URL의 회의 ID로 받아온 값으로 교체
+// readOnly: 공유 링크로 들어온 화면. 공유 버튼 없이 볼 수 있는 기한을 알려준다.
+export const ResultPage = ({ readOnly = false }) => {
+  // TODO: 회의 결과 API 연동 후 URL의 회의 ID·공유 코드로 받아온 값으로 교체
   const meeting = mockResult;
   // 네트워크가 끊기면 본문 대신 로딩 화면을 보여주고, 다시 연결되면 돌아온다.
   const isOnline = useOnlineStatus();
@@ -68,9 +70,36 @@ export const ResultPage = () => {
     setIsShareModalOpen(false);
   };
 
+  const expiryNotice = readOnly && (
+    <p className={styles.expiryNotice}>
+      공유 링크는 {formatDate(meeting.shareExpiresAt)}까지 볼 수 있어요.
+    </p>
+  );
+
+  const audioPlayer = (
+    <AudioPlayer
+      currentTime={player.currentTime}
+      duration={player.duration}
+      isPlaying={player.isPlaying}
+      onTogglePlay={player.togglePlay}
+      onSeek={player.seek}
+    />
+  );
+
+  const copyToast = copyToastKey && (
+    <Toast
+      key={copyToastKey}
+      icon={copyCheck}
+      message="복사되었습니다!"
+      onClose={closeCopyToast}
+    />
+  );
+
   return (
     <div className={styles.page}>
-      <Header />
+      <Header>
+        {readOnly && <span className={styles.readOnlyBadge}>읽기 전용</span>}
+      </Header>
       <audio {...player.audioProps} src={meeting.audioUrl ?? undefined} />
 
       {!isOnline ? (
@@ -104,35 +133,29 @@ export const ResultPage = () => {
                 onSelect={handleSelectScript}
               />
             )}
+            {tab === 'script' && expiryNotice}
           </main>
 
-          <BottomBar
-            icon={linkWhite}
-            onClick={() => setIsShareModalOpen(true)}
-            header={
-              tab === 'script' && (
-                <AudioPlayer
-                  currentTime={player.currentTime}
-                  duration={player.duration}
-                  isPlaying={player.isPlaying}
-                  onTogglePlay={player.togglePlay}
-                  onSeek={player.seek}
-                />
-              )
-            }
-            floating={
-              copyToastKey && (
-                <Toast
-                  key={copyToastKey}
-                  icon={copyCheck}
-                  message="복사되었습니다!"
-                  onClose={closeCopyToast}
-                />
-              )
-            }
-          >
-            결과 공유하기
-          </BottomBar>
+          {readOnly ? (
+            <>
+              {tab !== 'script' && expiryNotice}
+              {tab === 'script' && (
+                <BottomBar header={audioPlayer} floating={copyToast} />
+              )}
+              {tab !== 'script' && copyToast && (
+                <div className={styles.floatingToast}>{copyToast}</div>
+              )}
+            </>
+          ) : (
+            <BottomBar
+              icon={linkWhite}
+              onClick={() => setIsShareModalOpen(true)}
+              header={tab === 'script' && audioPlayer}
+              floating={copyToast}
+            >
+              결과 공유하기
+            </BottomBar>
+          )}
         </>
       )}
 

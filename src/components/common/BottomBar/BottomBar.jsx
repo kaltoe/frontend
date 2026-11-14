@@ -6,6 +6,7 @@ import styles from './BottomBar.module.scss';
 // notice: 버튼 위에 띄우는 안내 문구 (noticeType이 'danger'면 빨간 배경으로 강조)
 // floating: 하단 바 바로 위에 띄우는 요소 (토스트 등)
 // header: 하단 바 안에서 버튼 위에 두는 요소 (녹음 플레이어 등)
+// children이 없으면 버튼 없이 header만 보여준다.
 export const BottomBar = ({
   icon,
   onClick,
@@ -32,15 +33,17 @@ export const BottomBar = ({
           {notice}
         </p>
       )}
-      <button
-        className={styles.button}
-        type="button"
-        onClick={onClick}
-        disabled={disabled}
-      >
-        {icon && <img src={icon} alt="" />}
-        <span className={styles.buttonText}>{children}</span>
-      </button>
+      {children && (
+        <button
+          className={styles.button}
+          type="button"
+          onClick={onClick}
+          disabled={disabled}
+        >
+          {icon && <img src={icon} alt="" />}
+          <span className={styles.buttonText}>{children}</span>
+        </button>
+      )}
     </footer>
   );
 };

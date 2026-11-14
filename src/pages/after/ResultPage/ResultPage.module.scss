@@ -13,3 +13,30 @@
   flex: 1;
   padding: 18px 20px 24px;
 }
+
+.readOnlyBadge {
+  padding: 4px 8px;
+  border-radius: 999px;
+  background-color: $color-gray-150;
+  font-size: $font-size-12;
+  font-weight: $font-weight-medium;
+  line-height: 1.5;
+  letter-spacing: -0.01em;
+  color: $color-gray-900;
+}
+
+.expiryNotice {
+  @include flex;
+  flex-shrink: 0;
+  height: 52px;
+  font-size: $font-size-12;
+  line-height: 1.5;
+  color: $color-gray-500;
+}
+
+.floatingToast {
+  position: fixed;
+  bottom: 52px;
+  left: 50%;
+  transform: translateX(-50%);
+}

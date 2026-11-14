@@ -17,6 +17,7 @@ export const mockResult = {
   recordingSeconds: 1680,
   isScriptLocked: false,
   shareCode: 'mock-share-code',
+  shareExpiresAt: '2026-11-22T00:00:00',
   agendas: [
     {
       id: 1,

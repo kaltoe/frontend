@@ -2,7 +2,7 @@
 @use '@/styles/function' as *;
 
 .header {
-  @include flex(row, flex-end, flex-start);
+  @include flex(row, flex-end, space-between);
   flex-shrink: 0;
   height: 105px;
   padding: 0 21px 14px;
