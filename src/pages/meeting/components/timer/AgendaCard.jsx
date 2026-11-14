@@ -1,5 +1,8 @@
-import { formatTimer } from '../utils/formatTimer';
-import { getTimerState, isOvertimeAgenda } from '../utils/timerState';
+import { formatTimer } from '@/pages/meeting/utils/formatTimer';
+import {
+  getTimerState,
+  isOvertimeAgenda,
+} from '@/pages/meeting/utils/timerState';
 import styles from './AgendaCard.module.scss';
 
 // 원형 타이머

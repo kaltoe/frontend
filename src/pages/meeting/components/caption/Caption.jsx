@@ -1,5 +1,5 @@
 import { meetingDotDanger, meetingDotWarning } from '@/assets';
-import { formatTimer } from '../utils/formatTimer';
+import { formatTimer } from '@/pages/meeting/utils/formatTimer';
 import styles from './Caption.module.scss';
 
 const BADGES = {

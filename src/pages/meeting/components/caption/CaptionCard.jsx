@@ -1,5 +1,5 @@
 import { meetingIconCaption, meetingIconChevron } from '@/assets';
-import { getEmptyCaptionText } from '../utils/captionStatus';
+import { getEmptyCaptionText } from '@/pages/meeting/utils/captionStatus';
 import { CaptionBadge, CaptionLine } from './Caption';
 import styles from './CaptionCard.module.scss';
 

@@ -6,9 +6,9 @@ import {
   meetingIconMicOffSlash,
   meetingIconMicOn,
 } from '@/assets';
-import { getEmptyCaptionText } from '../utils/captionStatus';
-import { formatTimer } from '../utils/formatTimer';
-import { getTimerState } from '../utils/timerState';
+import { getEmptyCaptionText } from '@/pages/meeting/utils/captionStatus';
+import { formatTimer } from '@/pages/meeting/utils/formatTimer';
+import { getTimerState } from '@/pages/meeting/utils/timerState';
 import { CaptionBadge, CaptionLine } from './Caption';
 import styles from './CaptionSheet.module.scss';
 

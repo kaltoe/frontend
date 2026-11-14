@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { mockMeeting } from '../mockMeeting';
+import { mockMeeting } from '@/pages/meeting/mockMeeting';
 
 // API호출로 바꾸고 응답 & WebSocket 이벤트의 timer로 스냅샷 교체
 export const useLiveMeeting = () => {
