@@ -4,6 +4,15 @@
 // 사용: import { meetingIconCaption } from '@/assets';
 
 // 회의 라이브 화면
+import meetingControlMicDisabled from './meeting/control-mic-disabled.svg';
+import meetingControlMicOffBody from './meeting/control-mic-off-body.svg';
+import meetingControlMicOffSlash from './meeting/control-mic-off-slash.svg';
+import meetingControlMicOn from './meeting/control-mic-on.svg';
+import meetingControlNext from './meeting/control-next.svg';
+import meetingControlNextDisabled from './meeting/control-next-disabled.svg';
+import meetingControlPause from './meeting/control-pause.svg';
+import meetingControlPauseDisabled from './meeting/control-pause-disabled.svg';
+import meetingControlPlay from './meeting/control-play.svg';
 import meetingDotDanger from './meeting/dot-danger.svg';
 import meetingDotWarning from './meeting/dot-warning.svg';
 import meetingIconCaption from './meeting/icon-caption.svg';
@@ -16,6 +25,15 @@ import meetingIconMicOffSmall from './meeting/icon-mic-off-small.svg';
 import meetingIconMicOn from './meeting/icon-mic-on.svg';
 
 export {
+  meetingControlMicDisabled,
+  meetingControlMicOffBody,
+  meetingControlMicOffSlash,
+  meetingControlMicOn,
+  meetingControlNext,
+  meetingControlNextDisabled,
+  meetingControlPause,
+  meetingControlPauseDisabled,
+  meetingControlPlay,
   meetingDotDanger,
   meetingDotWarning,
   meetingIconCaption,

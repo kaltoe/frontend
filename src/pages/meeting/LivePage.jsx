@@ -3,15 +3,16 @@ import { meetingIconChatWarning, meetingIconMicOffSmall } from '@/assets';
 import { AgendaCard } from './components/AgendaCard';
 import { CaptionCard } from './components/CaptionCard';
 import { CaptionSheet } from './components/CaptionSheet';
+import { ControlBar } from './components/ControlBar';
 import { LiveHeader } from './components/LiveHeader';
 import { Toast } from './components/Toast';
 import { TotalTimer } from './components/TotalTimer';
+import { useLiveMeeting } from './hooks/useLiveMeeting';
 import { useMeetingTimer } from './hooks/useMeetingTimer';
-import { mockMeeting } from './mockMeeting';
 import { getCaptionStatus } from './utils/captionStatus';
 import styles from './LivePage.module.scss';
 
-// 자막 상태가 바뀌면 띄우는 토스트 (#29). 5초 뒤 자동으로 사라짐
+// 음성 관련 토스트
 const CAPTION_TOASTS = {
   noAudio: {
     variant: 'danger',
@@ -26,7 +27,7 @@ const CAPTION_TOASTS = {
 };
 
 export const LivePage = () => {
-  const meeting = mockMeeting;
+  const { meeting, pause, resume, toggleMic } = useLiveMeeting();
   const timer = useMeetingTimer(meeting.timer);
   const [isCaptionSheetOpen, setIsCaptionSheetOpen] = useState(false);
   const closeCaptionSheet = useCallback(() => setIsCaptionSheetOpen(false), []);
@@ -52,9 +53,19 @@ export const LivePage = () => {
   }
   const closeCaptionToast = useCallback(() => setCaptionToast(null), []);
 
+  const isHost = meeting.me.role === 'HOST';
+  const isMicOn = meeting.me.micState === 'ON';
+  const isPaused = timer.status === 'PAUSED';
   // 진행자는 항상, 참여자는 비대면일 때만 마이크를 켜고 끌 수 있음 (#30)
+  // 마이크 권한이 없으면 누구도 켤 수 없음
   const canUseMic =
-    meeting.me.role === 'HOST' || meeting.meetingMode === 'REMOTE';
+    (isHost || meeting.meetingMode === 'REMOTE') &&
+    meeting.me.micState !== 'DENIED';
+
+  const handlePauseToggle = () => {
+    if (isPaused) resume(timer);
+    else pause(timer);
+  };
 
   return (
     <div className={styles.page}>
@@ -90,7 +101,21 @@ export const LivePage = () => {
         />
       )}
 
-      {/* TODO: 하단 컨트롤 바 (#27, #28, #30, #39, #40) */}
+      <ControlBar
+        isHost={isHost}
+        isMicOn={isMicOn}
+        canUseMic={canUseMic}
+        isPaused={isPaused}
+        isLastAgenda={currentIndex === meeting.agendas.length - 1}
+        onMicToggle={toggleMic}
+        onPauseToggle={handlePauseToggle}
+        onNext={() => {
+          // TODO: 안건 전환 확인 모달 → API-07 (#39)
+        }}
+        onEnd={() => {
+          // TODO: 회의 종료 확인 모달 → API-08 (#40)
+        }}
+      />
 
       {currentAgenda && (
         <CaptionSheet
@@ -102,11 +127,9 @@ export const LivePage = () => {
           transcripts={meeting.transcripts}
           partialTranscript={meeting.partialTranscript}
           status={captionStatus}
-          isMicOn={meeting.me.micState === 'ON'}
+          isMicOn={isMicOn}
           canUseMic={canUseMic}
-          onMicToggle={() => {
-            // TODO: 마이크 켜기/끄기 (#28) — 하단 컨트롤 바와 같은 동작
-          }}
+          onMicToggle={toggleMic}
           agendaRemainingSeconds={timer.agendaRemainingSeconds}
         />
       )}
