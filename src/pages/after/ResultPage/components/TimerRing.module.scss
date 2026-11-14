@@ -1,0 +1,84 @@
+@use '@/styles/variables' as *;
+@use '@/styles/function' as *;
+
+.ring {
+  position: relative;
+  height: 238px;
+  margin-top: 16px;
+}
+
+.svg {
+  position: absolute;
+  top: 3px;
+  left: 50%;
+  transform: translateX(-50%) rotate(-90deg);
+  fill: none;
+}
+
+.track {
+  stroke: $color-gray-200;
+  stroke-width: 8;
+}
+
+.segment,
+.segmentOver {
+  stroke-width: 10.44;
+}
+
+.segment {
+  stroke: $color-primary-500;
+}
+
+.segmentOver {
+  stroke: $color-danger-500;
+}
+
+.badge {
+  position: absolute;
+  top: 56.3px;
+  left: 50%;
+  padding: 4px 8px;
+  border-radius: 12px;
+  background-color: $color-primary-50;
+  font-size: $font-size-12;
+  font-weight: $font-weight-bold;
+  line-height: 1.22;
+  letter-spacing: -0.03em;
+  color: $color-primary-500;
+  white-space: nowrap;
+  transform: translateX(-50%);
+}
+
+.badgeOver {
+  background-color: $color-danger-50;
+  color: $color-danger-500;
+}
+
+.time {
+  position: absolute;
+  top: 91.3px;
+  left: 50%;
+  font-size: $font-size-50;
+  font-weight: $font-weight-black;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  color: $color-primary-500;
+  white-space: nowrap;
+  transform: translateX(-50%);
+}
+
+.timeOver {
+  color: $color-danger-500;
+}
+
+.unavailable {
+  position: absolute;
+  top: 110.5px;
+  left: 50%;
+  font-size: $font-size-14;
+  line-height: 1.22;
+  letter-spacing: -0.03em;
+  color: $color-gray-500;
+  white-space: nowrap;
+  transform: translateX(-50%);
+}

@@ -4,9 +4,12 @@ import { BottomBar } from '@/components/common/BottomBar/BottomBar';
 import { Header } from '@/components/common/Header/Header';
 import { LoadingView } from '@/components/common/LoadingView/LoadingView';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import { AgendaResultList } from './components/AgendaResultList';
 import { MeetingInfoCard } from './components/MeetingInfoCard';
 import { ResultTabs } from './components/ResultTabs';
+import { TimerRing } from './components/TimerRing';
 import { RESULT_TABS } from './constants';
+import { getTimeResult } from './getTimeResult';
 import { mockResult } from './mockResult';
 import styles from './ResultPage.module.scss';
 
@@ -16,6 +19,8 @@ export const ResultPage = () => {
   // 네트워크가 끊기면 본문 대신 로딩 화면을 보여주고, 다시 연결되면 돌아온다.
   const isOnline = useOnlineStatus();
   const [tab, setTab] = useState(RESULT_TABS[0].value);
+
+  const timeResult = getTimeResult(meeting.agendas);
 
   const handleShare = () => {};
 
@@ -29,7 +34,17 @@ export const ResultPage = () => {
         <>
           <main className={styles.content}>
             <ResultTabs value={tab} onChange={setTab} />
-            <MeetingInfoCard meeting={meeting} />
+            {tab === 'result' ? (
+              <MeetingInfoCard meeting={meeting}>
+                <TimerRing timeResult={timeResult} />
+                <AgendaResultList
+                  agendas={meeting.agendas}
+                  timeResult={timeResult}
+                />
+              </MeetingInfoCard>
+            ) : (
+              <MeetingInfoCard meeting={meeting} />
+            )}
           </main>
 
           <BottomBar icon={linkWhite} onClick={handleShare}>
