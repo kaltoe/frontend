@@ -10,12 +10,6 @@ export const getTimerState = (remainingSeconds) => {
   return 'normal';
 };
 
-const STATE_LEVEL = { normal: 0, warning: 1, over: 2 };
-
-// 두 상태 중 더 급한 쪽 (over > warning > normal)
-export const getUrgentState = (a, b) =>
-  STATE_LEVEL[a] >= STATE_LEVEL[b] ? a : b;
-
 // 끝난 안건이 배정 시간을 넘겼는지
 // actualSeconds: API-04 agendas[].actualSeconds, API-07·agenda.changed previousAgenda.actualSeconds
 export const isOvertimeAgenda = (agenda) =>

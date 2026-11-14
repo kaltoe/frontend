@@ -92,10 +92,11 @@ export const AgendaCard = ({ agendas, timer }) => {
 
           <ol className={styles.steps} aria-label="안건 순서">
             {agendas.map((item, index) => {
+              // 진행 바와 같은 규칙: 끝난 안건은 그 안건의 결과만 반영
               let stepState = 'pending';
               if (index === currentIndex) stepState = state;
               else if (index < currentIndex) {
-                stepState = isOvertimeAgenda(item) ? 'over' : state;
+                stepState = isOvertimeAgenda(item) ? 'over' : 'normal';
               }
               return (
                 <li key={item.agendaId} className={styles.step}>

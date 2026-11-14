@@ -1,7 +1,6 @@
 import { formatTimer } from '@/pages/meeting/utils/formatTimer';
 import {
   getTimerState,
-  getUrgentState,
   isOvertimeAgenda,
 } from '@/pages/meeting/utils/timerState';
 import styles from './TotalTimer.module.scss';
@@ -28,8 +27,6 @@ export const TotalTimer = ({ agendas, timer }) => {
       ? 'normal'
       : getTimerState(timer.agendaRemainingSeconds);
 
-  const urgentState = getUrgentState(totalState, agendaState);
-
   return (
     <section className={styles.totalTimer} aria-label="전체 회의 타이머">
       <p className={`${styles.label} ${styles[totalState]}`}>
@@ -38,7 +35,7 @@ export const TotalTimer = ({ agendas, timer }) => {
       <div className={styles.body}>
         <p className={styles.time}>
           <span
-            className={`${styles.remaining} ${styles[urgentState]}`}
+            className={`${styles.remaining} ${styles[totalState]}`}
             role="timer"
           >
             {formatTimer(timer.totalRemainingSeconds)}
@@ -50,12 +47,12 @@ export const TotalTimer = ({ agendas, timer }) => {
           {agendas.map((agenda, index) => {
             const ratio = getSegmentRatio(index, currentIndex, timer);
             const isCurrent = index === currentIndex;
-            // 초과로 끝난 안건은 다음 안건으로 넘어가도 빨간색 유지
-            const wasOver = !isCurrent && isOvertimeAgenda(agenda);
-            let fillState = totalState;
-
-            if (isCurrent) fillState = urgentState;
-            else if (wasOver) fillState = 'over';
+            // 칸 색 = 그 안건의 상태 (전체 시간과는 상관없음)
+            // - 진행 중 안건: 안건 남은 시간 기준 (임박 노랑, 초과 빨강)
+            // - 끝난 안건: 초과로 끝났으면 빨강, 아니면 기본색
+            let fillState = 'normal';
+            if (isCurrent) fillState = agendaState;
+            else if (isOvertimeAgenda(agenda)) fillState = 'over';
             return (
               <div
                 key={agenda.agendaId}
