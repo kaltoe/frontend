@@ -1,0 +1,15 @@
+@use '@/styles/variables' as *;
+@use '@/styles/function' as *;
+
+.page {
+  @include flex(column, stretch, flex-start);
+  position: relative;
+  min-height: 100dvh;
+  background-color: $color-gray-100;
+}
+
+.content {
+  @include flex(column, stretch, flex-start, 12px);
+  flex: 1;
+  padding: 18px 20px 24px;
+}

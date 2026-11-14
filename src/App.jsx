@@ -1,6 +1,7 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { Layout } from './components/layout/Layout';
 import { ExpiredLinkPage } from './pages/after/ExpiredLinkPage/ExpiredLinkPage';
+import { ResultPage } from './pages/after/ResultPage/ResultPage';
 import { JoinPage } from './pages/before/JoinPage/JoinPage';
 import { MainPage } from './pages/before/MainPage/MainPage';
 import { SetupPage } from './pages/before/SetupPage/SetupPage';
@@ -14,6 +15,7 @@ function App() {
           <Route path="/" element={<MainPage />} />
           <Route path="/setup" element={<SetupPage />} />
           <Route path="/m/:code" element={<JoinPage />} />
+          <Route path="/result/:meetingId" element={<ResultPage />} />
           <Route path="/invalid-link" element={<ExpiredLinkPage />} />
           {/* <Route path="/onboarding" element={<OnboardingPage />} /> */}
         </Route>
