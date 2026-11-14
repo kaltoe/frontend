@@ -1,7 +1,49 @@
-// 아이콘·이미지·소리 파일들을 한 곳에서 관리하기 위한 인덱스 파일(Barrel export)
-// 1. 화면별 폴더(meeting 등)에 파일 추가
-// 2. 여기서 import 후 아래 export에 이름 추가
-// 사용: import { meetingIconCaption } from '@/assets';
+// 아이콘 및 이미지 파일들을 한 곳에서 관리하기 위한 인덱스 파일(Barrel export)
+// 이미지 추가하면 여기서 임포트하고 내보내기
+import addAgenda from '@/assets/before/add-agenda.svg';
+import addAgendaGray from '@/assets/before/add-agenda-gray.svg';
+import bellRing from '@/assets/before/bell-ring.svg';
+import checkboxChecked from '@/assets/before/checkbox-checked.svg';
+import chevronDown from '@/assets/before/chevron-down.svg';
+import chevronLeft from '@/assets/before/chevron-left.svg';
+import chevronUp from '@/assets/before/chevron-up.svg';
+import close from '@/assets/before/close.svg';
+import closeSmall from '@/assets/before/close-small.svg';
+import copy from '@/assets/before/copy.svg';
+import copyCheck from '@/assets/before/copy-check.svg';
+import dragHandle from '@/assets/before/drag-handle.svg';
+import edit from '@/assets/before/edit.svg';
+import enter from '@/assets/before/enter.svg';
+import featureSummary from '@/assets/before/feature-summary.svg';
+import featureTime from '@/assets/before/feature-time.svg';
+import infoGray from '@/assets/before/info-gray.svg';
+import infoRed from '@/assets/before/info-red.svg';
+import joinGray from '@/assets/before/join-gray.svg';
+import joinWhite from '@/assets/before/join-white.svg';
+import keywordSearch from '@/assets/before/keyword-search.svg';
+import link from '@/assets/before/link.svg';
+import linkGray from '@/assets/before/link-gray.svg';
+import linkWhite from '@/assets/before/link-white.svg';
+import loading from '@/assets/before/loading.svg';
+import lock from '@/assets/before/lock.svg';
+import lockOlive from '@/assets/before/lock-olive.svg';
+import logoRun from '@/assets/before/logo-run.svg';
+import pause from '@/assets/before/pause.svg';
+import people from '@/assets/before/people.svg';
+import person from '@/assets/before/person.svg';
+import play from '@/assets/before/play.svg';
+import playGray from '@/assets/before/play-gray.svg';
+import playWhite from '@/assets/before/play-white.svg';
+import plusGray from '@/assets/before/plus-gray.svg';
+import plusOlive from '@/assets/before/plus-olive.svg';
+import plusWhite from '@/assets/before/plus-white.svg';
+import required from '@/assets/before/required.svg';
+import retry from '@/assets/before/retry.svg';
+import runWhite from '@/assets/before/run-white.svg';
+import trash from '@/assets/before/trash.svg';
+import trialDotFilled from '@/assets/before/trial-dot-filled.svg';
+import trialDotOutline from '@/assets/before/trial-dot-outline.svg';
+import trialLine from '@/assets/before/trial-line.svg';
 
 // 회의 라이브 화면
 import meetingControlMicDisabled from './meeting/control-mic-disabled.svg';
@@ -36,7 +78,52 @@ import meetingLogoRunWhite from './meeting/logo-run-white.svg';
 import meetingSoundOfftopic from './meeting/sound-offtopic.mp3';
 import meetingSoundTimeUp from './meeting/sound-time-up.mp3';
 
+// 임포트한 이미지 및 아이콘 내보내기
 export {
+  addAgenda,
+  addAgendaGray,
+  bellRing,
+  checkboxChecked,
+  chevronDown,
+  chevronLeft,
+  chevronUp,
+  close,
+  closeSmall,
+  copy,
+  copyCheck,
+  dragHandle,
+  edit,
+  enter,
+  featureSummary,
+  featureTime,
+  infoGray,
+  infoRed,
+  joinGray,
+  joinWhite,
+  keywordSearch,
+  link,
+  linkGray,
+  linkWhite,
+  loading,
+  lock,
+  lockOlive,
+  logoRun,
+  pause,
+  people,
+  person,
+  play,
+  playGray,
+  playWhite,
+  plusGray,
+  plusOlive,
+  plusWhite,
+  required,
+  retry,
+  runWhite,
+  trash,
+  trialDotFilled,
+  trialDotOutline,
+  trialLine,
   meetingControlMicDisabled,
   meetingControlMicOffBody,
   meetingControlMicOffSlash,

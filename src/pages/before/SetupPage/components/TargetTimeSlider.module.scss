@@ -1,0 +1,119 @@
+@use '@/styles/variables' as *;
+@use '@/styles/function' as *;
+
+.targetTime {
+  @include flex(column, stretch, flex-start, 8px);
+}
+
+.body {
+  @include flex(column, stretch, flex-start, 12px);
+}
+
+.header {
+  @include flex(row, center, space-between);
+}
+
+.label {
+  font-size: $font-size-16;
+  font-weight: $font-weight-bold;
+  line-height: 1.22;
+  letter-spacing: -0.03em;
+  color: $color-gray-900;
+}
+
+.valueRow {
+  @include flex(row, center, flex-end, 8px);
+  line-height: 1.55;
+  white-space: nowrap;
+}
+
+.value {
+  font-size: $font-size-16;
+  font-weight: $font-weight-bold;
+  color: $color-gray-900;
+}
+
+.resetButton {
+  border: none;
+  background: transparent;
+  font-size: $font-size-12;
+  line-height: 1.55;
+  color: $color-gray-500;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.sliderArea {
+  @include flex(column, stretch, flex-start, 4px);
+}
+
+$track-height: 6px;
+$thumb-size: 12px;
+
+.slider {
+  --fill-color: transparent;
+  width: 100%;
+  height: 18px;
+  margin: 0;
+  background: transparent;
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+
+  &::-webkit-slider-runnable-track {
+    height: $track-height;
+    border-radius: 999px;
+    background: linear-gradient(
+      to right,
+      var(--fill-color) var(--percent),
+      $color-gray-200 var(--percent)
+    );
+  }
+
+  &::-moz-range-track {
+    height: $track-height;
+    border-radius: 999px;
+    background: linear-gradient(
+      to right,
+      var(--fill-color) var(--percent),
+      $color-gray-200 var(--percent)
+    );
+  }
+
+  &::-webkit-slider-thumb {
+    width: $thumb-size;
+    height: $thumb-size;
+    margin-top: calc(($track-height - $thumb-size) / 2);
+    border: none;
+    border-radius: 50%;
+    background-color: $color-primary-500;
+    -webkit-appearance: none;
+  }
+
+  &::-moz-range-thumb {
+    width: $thumb-size;
+    height: $thumb-size;
+    border: none;
+    border-radius: 50%;
+    background-color: $color-primary-500;
+  }
+}
+
+.sliderActive {
+  --fill-color: #{$color-primary-500};
+}
+
+.scale {
+  @include flex(row, flex-start, space-between);
+  height: 18px;
+  font-size: $font-size-12;
+  line-height: 1.5;
+  color: $color-gray-400;
+  white-space: nowrap;
+}
+
+.hint {
+  font-size: $font-size-12;
+  line-height: 1.55;
+  color: $color-gray-500;
+}

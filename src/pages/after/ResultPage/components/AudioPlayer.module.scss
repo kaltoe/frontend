@@ -1,0 +1,77 @@
+@use '@/styles/variables' as *;
+@use '@/styles/function' as *;
+
+$track-height: 4px;
+$knob-size: 10px;
+
+.player {
+  @include flex(row, center, flex-start, 10px);
+}
+
+.playButton {
+  @include flex;
+  flex-shrink: 0;
+  height: 40px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.time {
+  flex-shrink: 0;
+  font-size: $font-size-10;
+  line-height: 1.5;
+  letter-spacing: -0.01em;
+  color: $color-gray-500;
+  white-space: nowrap;
+}
+
+.progress {
+  flex: 1;
+  min-width: 0;
+  height: $knob-size;
+  margin: 0;
+  background: transparent;
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+
+  &::-webkit-slider-runnable-track {
+    height: $track-height;
+    border-radius: 999px;
+    background: linear-gradient(
+      to right,
+      $color-primary-500 var(--percent),
+      $color-gray-150 var(--percent)
+    );
+  }
+
+  &::-moz-range-track {
+    height: $track-height;
+    border-radius: 999px;
+    background: linear-gradient(
+      to right,
+      $color-primary-500 var(--percent),
+      $color-gray-150 var(--percent)
+    );
+  }
+
+  &::-webkit-slider-thumb {
+    width: $knob-size;
+    height: $knob-size;
+    margin-top: calc(($track-height - $knob-size) / 2);
+    border: none;
+    border-radius: 50%;
+    background-color: $color-primary-500;
+    -webkit-appearance: none;
+  }
+
+  &::-moz-range-thumb {
+    width: $knob-size;
+    height: $knob-size;
+    border: none;
+    border-radius: 50%;
+    background-color: $color-primary-500;
+  }
+}

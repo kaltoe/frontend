@@ -1,0 +1,25 @@
+@use '@/styles/variables' as *;
+@use '@/styles/function' as *;
+
+.header {
+  @include flex(row, flex-end, flex-start);
+  flex-shrink: 0;
+  height: 105px;
+  padding: 0 20px 14px;
+  background-color: $color-gray-white;
+}
+
+.backButton {
+  @include flex(row, center, flex-start, 4px);
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.title {
+  font-size: $font-size-16;
+  font-weight: $font-weight-bold;
+  line-height: 1.22;
+  letter-spacing: -0.03em;
+  color: $color-gray-900;
+}
