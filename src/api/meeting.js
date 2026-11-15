@@ -8,3 +8,10 @@ export const createMeeting = async (payload, idempotencyKey) => {
   });
   return response.data.data;
 };
+
+// API-03 참여 Sign In (토큰 없이 호출)
+// body: { name, password? } 또는 진행자 복구 시 { hostRecoveryKey }
+export const signIn = async (meetingId, body) => {
+  const response = await api.post(`/meetings/${meetingId}/sign-in`, body);
+  return response.data.data;
+};
