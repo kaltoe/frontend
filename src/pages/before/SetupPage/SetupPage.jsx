@@ -3,6 +3,7 @@ import { playGray, playWhite } from '@/assets';
 import { BackHeader } from '@/components/common/BackHeader/BackHeader';
 import { BottomBar } from '@/components/common/BottomBar/BottomBar';
 import { FieldLabel } from '@/components/common/FieldLabel/FieldLabel';
+import { unlockMeetingAlert } from '@/pages/meeting/utils/meetingAlert';
 import { AgendaCard } from './components/AgendaCard';
 import { AgendaForm } from './components/AgendaForm';
 import { ConsentCheck } from './components/ConsentCheck';
@@ -41,7 +42,21 @@ export const SetupPage = () => {
   const canStart = !startBlocker;
 
   const handleStart = () => {
-    // TODO: 회의 생성 API 연동 후 생성된 회의 화면으로 이동
+    // 라이브 화면 알림음(#23, #35)을 누르는 순간 미리 깨움
+    // 아이폰 사파리 때문에 API 호출(await)보다 먼저 실행해야 함
+    unlockMeetingAlert();
+
+    // TODO: 회의 생성 API(API-02) 연동 후 생성된 회의 화면으로 이동
+    // const { data } = await createMeeting(body);
+    // saveMeetingSession(data.meetingId, {
+    //   accessToken: data.accessToken,
+    //   hostRecoveryKey: data.hostRecoveryKey, // API-02에서만 한 번 받음
+    //   meetingMode: data.meetingMode,
+    // });
+    // // 라이브 화면에 들어가면 팀원 초대 모달이 바로 열림 (#21, #22)
+    // navigate(`/meetings/${data.meetingId}/live`, {
+    //   state: { openInvite: true },
+    // });
   };
 
   const handleParticipantsChange = (event) => {
