@@ -19,8 +19,15 @@ export const JoinPage = () => {
 
   const isNameEmpty = name.trim().length === 0;
   const isNameTooLong = name.length > NAME_MAX_LENGTH;
-  const canJoin =
-    !isNameEmpty && !isNameTooLong && password.length === PASSWORD_LENGTH;
+  // 비밀번호는 선택. 입력했다면 숫자 4자리를 다 채워야 함
+  const isPasswordIncomplete =
+    password.length > 0 && password.length < PASSWORD_LENGTH;
+  const canJoin = !isNameEmpty && !isNameTooLong && !isPasswordIncomplete;
+  const notice = isNameEmpty
+    ? '이름을 입력해주세요.'
+    : isPasswordIncomplete
+      ? `비밀번호는 숫자 ${PASSWORD_LENGTH}자리로 입력해주세요.`
+      : undefined;
 
   const handleJoin = () => {
     // 라이브 화면 알림음(#23, #35)을 누르는 순간 미리 깨움
@@ -118,7 +125,7 @@ export const JoinPage = () => {
         icon={canJoin ? joinWhite : joinGray}
         onClick={handleJoin}
         disabled={!canJoin}
-        notice={isNameEmpty ? '이름을 입력해주세요.' : undefined}
+        notice={notice}
       >
         회의 입장하기
       </BottomBar>
