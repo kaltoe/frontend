@@ -7,7 +7,7 @@ import {
   meetingIconLink,
   meetingIconTime,
 } from '@/assets';
-import { Toast } from '@/pages/meeting/components/common/Toast';
+import { Toast } from '../common/Toast';
 import styles from './InviteModal.module.scss';
 
 const COPY_TOASTS = {

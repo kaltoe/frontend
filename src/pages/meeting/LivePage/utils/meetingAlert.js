@@ -39,7 +39,7 @@ const loadSound = (type) => {
 // 브라우저(특히 아이폰 사파리)는 사용자가 누르는 순간 실행된 코드에서만 소리를 허용함
 // → 라이브 화면으로 들어가는 버튼의 onClick 안에서 바로 호출해야 함 (await 뒤나 setTimeout 안 X)
 //   예: 회의 만들기·[회의 시작하기]·회의 참여 버튼
-//   import { unlockMeetingAlert } from '@/pages/meeting/utils/meetingAlert';
+//   import { unlockMeetingAlert } from '@/pages/meeting/LivePage/utils/meetingAlert';
 //   onClick={() => { unlockMeetingAlert(); ... }}
 // 라이브 화면에서도 첫 터치·키 입력 때 한 번 더 호출함 (새로고침 대비)
 export const unlockMeetingAlert = () => {

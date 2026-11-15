@@ -1,8 +1,5 @@
-import { formatTimer } from '@/pages/meeting/utils/formatTimer';
-import {
-  getTimerState,
-  isOvertimeAgenda,
-} from '@/pages/meeting/utils/timerState';
+import { formatTimer } from '../../utils/formatTimer';
+import { getTimerState, isOvertimeAgenda } from '../../utils/timerState';
 import styles from './TotalTimer.module.scss';
 
 const getSegmentRatio = (index, currentIndex, timer) => {

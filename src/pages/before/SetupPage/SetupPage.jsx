@@ -3,7 +3,7 @@ import { playGray, playWhite } from '@/assets';
 import { BackHeader } from '@/components/common/BackHeader/BackHeader';
 import { BottomBar } from '@/components/common/BottomBar/BottomBar';
 import { FieldLabel } from '@/components/common/FieldLabel/FieldLabel';
-import { unlockMeetingAlert } from '@/pages/meeting/utils/meetingAlert';
+import { unlockMeetingAlert } from '@/pages/meeting/LivePage/utils/meetingAlert';
 import { AgendaCard } from './components/AgendaCard';
 import { AgendaForm } from './components/AgendaForm';
 import { ConsentCheck } from './components/ConsentCheck';

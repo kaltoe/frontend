@@ -1,6 +1,6 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { Layout } from './components/layout/Layout';
-import { LivePage } from './pages/meeting/LivePage';
+import { LivePage } from './pages/meeting/LivePage/LivePage';
 import { ExpiredLinkPage } from './pages/after/ExpiredLinkPage/ExpiredLinkPage';
 import { ResultPage } from './pages/after/ResultPage/ResultPage';
 import { JoinPage } from './pages/before/JoinPage/JoinPage';

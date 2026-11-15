@@ -3,7 +3,7 @@ import { infoGray, joinGray, joinWhite, lock, people, person } from '@/assets';
 import { BackHeader } from '@/components/common/BackHeader/BackHeader';
 import { BottomBar } from '@/components/common/BottomBar/BottomBar';
 import { FieldLabel } from '@/components/common/FieldLabel/FieldLabel';
-import { unlockMeetingAlert } from '@/pages/meeting/utils/meetingAlert';
+import { unlockMeetingAlert } from '@/pages/meeting/LivePage/utils/meetingAlert';
 import { IconInput } from './components/IconInput';
 import { RecoveryKeyField } from './components/RecoveryKeyField';
 import { NAME_MAX_LENGTH, PASSWORD_LENGTH } from './constants';

@@ -1,22 +1,22 @@
 import { useCallback, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { ErrorScreen } from '@/pages/meeting/components/status/ErrorScreen';
-import { LoadingScreen } from '@/pages/meeting/components/status/LoadingScreen';
 import { meetingIconChatWarning, meetingIconMicOffSmall } from '@/assets';
-import { AgendaCard } from '@/pages/meeting/components/timer/AgendaCard';
-import { CaptionCard } from '@/pages/meeting/components/caption/CaptionCard';
-import { CaptionSheet } from '@/pages/meeting/components/caption/CaptionSheet';
-import { ConfirmModal } from '@/pages/meeting/components/modals/ConfirmModal';
-import { ControlBar } from '@/pages/meeting/components/controls/ControlBar';
-import { InviteModal } from '@/pages/meeting/components/modals/InviteModal';
-import { LiveHeader } from '@/pages/meeting/components/header/LiveHeader';
-import { OfftopicModal } from '@/pages/meeting/components/modals/OfftopicModal';
-import { Toast } from '@/pages/meeting/components/common/Toast';
-import { TotalTimer } from '@/pages/meeting/components/timer/TotalTimer';
-import { useLiveMeeting } from '@/pages/meeting/hooks/useLiveMeeting';
-import { useMeetingAlerts } from '@/pages/meeting/hooks/useMeetingAlerts';
-import { useMeetingTimer } from '@/pages/meeting/hooks/useMeetingTimer';
-import { getCaptionStatus } from '@/pages/meeting/utils/captionStatus';
+import { CaptionCard } from './components/caption/CaptionCard';
+import { CaptionSheet } from './components/caption/CaptionSheet';
+import { Toast } from './components/common/Toast';
+import { ControlBar } from './components/controls/ControlBar';
+import { LiveHeader } from './components/header/LiveHeader';
+import { ConfirmModal } from './components/modals/ConfirmModal';
+import { InviteModal } from './components/modals/InviteModal';
+import { OfftopicModal } from './components/modals/OfftopicModal';
+import { ErrorScreen } from './components/status/ErrorScreen';
+import { LoadingScreen } from './components/status/LoadingScreen';
+import { AgendaCard } from './components/timer/AgendaCard';
+import { TotalTimer } from './components/timer/TotalTimer';
+import { useLiveMeeting } from './hooks/useLiveMeeting';
+import { useMeetingAlerts } from './hooks/useMeetingAlerts';
+import { useMeetingTimer } from './hooks/useMeetingTimer';
+import { getCaptionStatus } from './utils/captionStatus';
 import styles from './LivePage.module.scss';
 
 // 음성 관련 토스트
