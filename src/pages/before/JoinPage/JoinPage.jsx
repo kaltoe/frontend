@@ -3,6 +3,7 @@ import { infoGray, joinGray, joinWhite, lock, people, person } from '@/assets';
 import { BackHeader } from '@/components/common/BackHeader/BackHeader';
 import { BottomBar } from '@/components/common/BottomBar/BottomBar';
 import { FieldLabel } from '@/components/common/FieldLabel/FieldLabel';
+import { unlockMeetingAlert } from '@/pages/meeting/utils/meetingAlert';
 import { IconInput } from './components/IconInput';
 import { RecoveryKeyField } from './components/RecoveryKeyField';
 import { NAME_MAX_LENGTH, PASSWORD_LENGTH } from './constants';
@@ -22,7 +23,16 @@ export const JoinPage = () => {
     !isNameEmpty && !isNameTooLong && password.length === PASSWORD_LENGTH;
 
   const handleJoin = () => {
-    // TODO: 회의 입장 API 연동 (recoveryKey가 있으면 진행자로 입장)
+    // 라이브 화면 알림음(#23, #35)을 누르는 순간 미리 깨움
+    // 아이폰 사파리 때문에 API 호출(await)보다 먼저 실행해야 함
+    unlockMeetingAlert();
+
+    // TODO: 회의 입장 API(API-03) 연동 (recoveryKey가 있으면 진행자로 입장)
+    // code: useParams()의 링크 코드
+    // const { data } = await signIn(code, { name, password, hostRecoveryKey: recoveryKey });
+    // saveMeetingSession(code, { accessToken: data.accessToken });
+    // // 참여자·진행자 복구 모두 openInvite는 넘기지 않음 (초대 모달 자동 열림은 회의를 시작한 진행자만)
+    // navigate(`/meetings/${code}/live`);
   };
 
   const handlePasswordChange = (event) => {
