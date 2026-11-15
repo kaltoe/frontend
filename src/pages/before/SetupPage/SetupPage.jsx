@@ -51,7 +51,6 @@ export const SetupPage = () => {
     // saveMeetingSession(data.meetingId, {
     //   accessToken: data.accessToken,
     //   hostRecoveryKey: data.hostRecoveryKey, // API-02에서만 한 번 받음
-    //   meetingMode: data.meetingMode,
     // });
     // // 라이브 화면에 들어가면 팀원 초대 모달이 바로 열림 (#21, #22)
     // navigate(`/meetings/${data.meetingId}/live`, {

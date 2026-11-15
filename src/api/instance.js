@@ -27,7 +27,11 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     const { config, response } = error;
-    if (response?.status === 401 && config?.meetingId) {
+    if (
+      response?.status === 401 &&
+      response.data?.error?.code === 'UNAUTHORIZED' &&
+      config?.meetingId
+    ) {
       clearMeetingSession(config.meetingId);
     }
     return Promise.reject(error);

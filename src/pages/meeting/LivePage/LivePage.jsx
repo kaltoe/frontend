@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { meetingIconChatWarning, meetingIconMicOffSmall } from '@/assets';
 import { CaptionCard } from './components/caption/CaptionCard';
 import { CaptionSheet } from './components/caption/CaptionSheet';
@@ -47,16 +47,15 @@ const CONFIRM_MODALS = {
   },
 };
 
-export const LivePage = () => {
-  const {
-    connection,
-    meeting,
-    pause,
-    resume,
-    toggleMic,
-    closeOfftopic,
-    dismissOfftopic,
-  } = useLiveMeeting();
+// 회의 데이터를 받은 뒤에 그리는 화면
+const LiveMeeting = ({
+  meeting,
+  pause,
+  resume,
+  toggleMic,
+  closeOfftopic,
+  dismissOfftopic,
+}) => {
   const offtopicEvent = meeting.activeOfftopicEvent;
   const isHost = meeting.me.role === 'HOST';
 
@@ -132,10 +131,6 @@ export const LivePage = () => {
     }
     setConfirmModal(null);
   };
-
-  // 만료된 링크면 에러
-  if (connection === 'error') return <ErrorScreen />;
-  if (connection !== 'connected') return <LoadingScreen />;
 
   return (
     <div className={styles.page}>
@@ -227,4 +222,15 @@ export const LivePage = () => {
       )}
     </div>
   );
+};
+
+// 회의 상태(API-04)를 불러오는 동안 로딩, 실패하면 에러 화면
+export const LivePage = () => {
+  const { meetingId } = useParams();
+  const { connection, meeting, ...actions } = useLiveMeeting(meetingId);
+
+  if (connection === 'error') return <ErrorScreen />;
+  if (connection !== 'connected' || !meeting) return <LoadingScreen />;
+
+  return <LiveMeeting meeting={meeting} {...actions} />;
 };
