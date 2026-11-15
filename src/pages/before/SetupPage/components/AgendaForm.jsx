@@ -4,6 +4,7 @@ import {
   addAgendaGray,
   close,
   keywordSearch,
+  plusGray,
   plusOlive,
 } from '@/assets';
 import { FieldLabel } from '@/components/common/FieldLabel/FieldLabel';
@@ -144,7 +145,7 @@ export const AgendaForm = ({ agendaCount, draft, onSubmit }) => {
               disabled={!canAddKeyword}
               aria-label="키워드 추가"
             >
-              <img src={plusOlive} alt="" />
+              <img src={canAddKeyword ? plusOlive : plusGray} alt="" />
             </button>
           </label>
         </div>

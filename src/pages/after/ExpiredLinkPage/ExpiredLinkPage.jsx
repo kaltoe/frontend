@@ -17,7 +17,7 @@ export const ExpiredLinkPage = () => {
         <div className={styles.text}>
           <h1 className={styles.title}>만료되었거나 잘못된 링크예요.</h1>
           <p className={styles.description}>
-            공유 링크는 회의가 끝난 뒤 2주 동안만 볼 수 있어요.
+            공유 링크는 회의가 끝난 뒤 7일 동안만 볼 수 있어요.
           </p>
         </div>
       </main>
