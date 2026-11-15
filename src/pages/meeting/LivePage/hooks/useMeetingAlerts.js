@@ -1,8 +1,5 @@
 import { useEffect, useRef } from 'react';
-import {
-  playMeetingAlert,
-  unlockMeetingAlert,
-} from '@/pages/meeting/utils/meetingAlert';
+import { playMeetingAlert, unlockMeetingAlert } from '../utils/meetingAlert';
 
 // 회의 중 알림음 (참여자 모두에게)
 // - 전체 남은 시간이 0 (#23)
