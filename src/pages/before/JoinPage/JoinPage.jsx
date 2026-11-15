@@ -1,45 +1,83 @@
 import { useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { signIn } from '@/api/meeting';
 import { infoGray, joinGray, joinWhite, lock, people, person } from '@/assets';
 import { BackHeader } from '@/components/common/BackHeader/BackHeader';
 import { BottomBar } from '@/components/common/BottomBar/BottomBar';
 import { FieldLabel } from '@/components/common/FieldLabel/FieldLabel';
 import { unlockMeetingAlert } from '@/pages/meeting/LivePage/utils/meetingAlert';
+import { saveMeetingSession } from '@/utils/meetingSession';
 import { IconInput } from './components/IconInput';
 import { RecoveryKeyField } from './components/RecoveryKeyField';
 import { NAME_MAX_LENGTH, PASSWORD_LENGTH } from './constants';
+import { getSignInErrorMessage } from './getSignInErrorMessage';
 import styles from './JoinPage.module.scss';
 
 // TODO: 회의 조회 API 연동 후 링크 코드(useParams의 code)로 받아온 값으로 교체
 const meeting = { title: '회의 제목', participantCount: 3 };
 
+// 진행자 복구 키가 있으면 이름·비밀번호는 보내지 않음 (서버도 보지 않음)
+const toSignInBody = ({ name, password, recoveryKey }) => {
+  const hostRecoveryKey = recoveryKey.trim().toUpperCase();
+  if (hostRecoveryKey) return { hostRecoveryKey };
+  return password ? { name: name.trim(), password } : { name: name.trim() };
+};
+
 export const JoinPage = () => {
+  const navigate = useNavigate();
+  // 링크 코드는 대문자 6자리 (API-01 비고)
+  const meetingId = (useParams().code ?? '').toUpperCase();
+
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
   const [recoveryKey, setRecoveryKey] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  // 서버가 거절한 이유. 그때 보낸 body와 같을 때만 보여준다 (입력을 고치면 사라짐)
+  const [requestError, setRequestError] = useState(null);
 
   const isNameEmpty = name.trim().length === 0;
   const isNameTooLong = name.length > NAME_MAX_LENGTH;
   // 비밀번호는 선택. 입력했다면 숫자 4자리를 다 채워야 함
   const isPasswordIncomplete =
     password.length > 0 && password.length < PASSWORD_LENGTH;
-  const canJoin = !isNameEmpty && !isNameTooLong && !isPasswordIncomplete;
+  const canJoin =
+    !isNameEmpty && !isNameTooLong && !isPasswordIncomplete && !isSubmitting;
+
+  const body = toSignInBody({ name, password, recoveryKey });
+  const bodyKey = JSON.stringify(body);
+  const visibleRequestError =
+    requestError?.bodyKey === bodyKey ? requestError.message : null;
+
   const notice = isNameEmpty
     ? '이름을 입력해주세요.'
     : isPasswordIncomplete
       ? `비밀번호는 숫자 ${PASSWORD_LENGTH}자리로 입력해주세요.`
-      : undefined;
+      : visibleRequestError;
 
-  const handleJoin = () => {
+  const handleJoin = async () => {
     // 라이브 화면 알림음(#23, #35)을 누르는 순간 미리 깨움
     // 아이폰 사파리 때문에 API 호출(await)보다 먼저 실행해야 함
     unlockMeetingAlert();
 
-    // TODO: 회의 입장 API(API-03) 연동 (recoveryKey가 있으면 진행자로 입장)
-    // code: useParams()의 링크 코드
-    // const { data } = await signIn(code, { name, password, hostRecoveryKey: recoveryKey });
-    // saveMeetingSession(code, { accessToken: data.accessToken });
-    // // 참여자·진행자 복구 모두 openInvite는 넘기지 않음 (초대 모달 자동 열림은 회의를 시작한 진행자만)
-    // navigate(`/meetings/${code}/live`);
+    if (!canJoin) return;
+    setIsSubmitting(true);
+    setRequestError(null);
+
+    try {
+      const signedIn = await signIn(meetingId, body);
+      saveMeetingSession(meetingId, {
+        accessToken: signedIn.accessToken,
+        // 진행자로 복구했으면 초대 모달에서 다시 보여줄 수 있게 함께 저장
+        ...(body.hostRecoveryKey && {
+          hostRecoveryKey: body.hostRecoveryKey,
+        }),
+      });
+      // 참여자·진행자 복구 모두 openInvite는 넘기지 않음 (초대 모달 자동 열림은 회의를 시작한 진행자만)
+      navigate(`/meetings/${meetingId}/live`, { replace: true });
+    } catch (error) {
+      setRequestError({ bodyKey, message: getSignInErrorMessage(error) });
+      setIsSubmitting(false);
+    }
   };
 
   const handlePasswordChange = (event) => {
@@ -125,9 +163,10 @@ export const JoinPage = () => {
         icon={canJoin ? joinWhite : joinGray}
         onClick={handleJoin}
         disabled={!canJoin}
-        notice={notice}
+        notice={notice ?? undefined}
+        noticeType={notice === visibleRequestError ? 'danger' : 'info'}
       >
-        회의 입장하기
+        {isSubmitting ? '입장하는 중…' : '회의 입장하기'}
       </BottomBar>
     </div>
   );
