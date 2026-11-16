@@ -29,12 +29,13 @@ export const AgendaForm = ({ agendaCount, draft, onSubmit }) => {
 
   const trimmedKeyword = keywordInput.trim();
   const isKeywordTooLong = trimmedKeyword.length > KEYWORD_MAX_LENGTH;
-  const canAddKeyword =
-    trimmedKeyword.length > 0 &&
-    !isKeywordTooLong &&
-    keywords.length < KEYWORD_MAX_COUNT;
+  // 키워드가 이미 다 찼는데 더 입력한 경우
+  const isKeywordOverCount =
+    trimmedKeyword.length > 0 && keywords.length >= KEYWORD_MAX_COUNT;
+  const hasKeywordError = isKeywordTooLong || isKeywordOverCount;
+  const canAddKeyword = trimmedKeyword.length > 0 && !hasKeywordError;
   const isFull = agendaCount >= AGENDA_MAX_COUNT;
-  const isSubmitDisabled = isKeywordTooLong || isFull;
+  const isSubmitDisabled = hasKeywordError || isFull;
 
   const handleAddKeyword = () => {
     if (!canAddKeyword) return;
@@ -59,9 +60,14 @@ export const AgendaForm = ({ agendaCount, draft, onSubmit }) => {
     setKeywords([]);
   };
 
-  const keywordError = isKeywordTooLong && (
+  // 개수 초과면 글자 수와 상관없이 추가할 수 없으므로 개수 문구를 먼저 보여준다
+  const keywordErrorMessage = isKeywordOverCount
+    ? `키워드는 ${KEYWORD_MAX_COUNT}개까지 입력 가능해요.`
+    : isKeywordTooLong &&
+      `키워드를 ${KEYWORD_MAX_LENGTH}자 이내로 입력해주세요.`;
+  const keywordError = keywordErrorMessage && (
     <p className={`${styles.hint} ${styles.errorText}`}>
-      키워드를 {KEYWORD_MAX_LENGTH}자 이내로 입력해주세요.
+      {keywordErrorMessage}
     </p>
   );
 
@@ -123,7 +129,7 @@ export const AgendaForm = ({ agendaCount, draft, onSubmit }) => {
             autoFocus={Boolean(draft)}
           />
           <label
-            className={`${styles.keywordBox} ${isKeywordTooLong ? styles.keywordBoxError : ''}`}
+            className={`${styles.keywordBox} ${hasKeywordError ? styles.keywordBoxError : ''}`}
           >
             <span className={styles.keywordIcon}>
               <img src={keywordSearch} alt="" />
