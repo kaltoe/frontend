@@ -1,9 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { createMeeting } from '@/api/meeting';
 import { playGray, playWhite } from '@/assets';
 import { BackHeader } from '@/components/common/BackHeader/BackHeader';
 import { BottomBar } from '@/components/common/BottomBar/BottomBar';
 import { FieldLabel } from '@/components/common/FieldLabel/FieldLabel';
 import { unlockMeetingAlert } from '@/pages/meeting/LivePage/utils/meetingAlert';
+import { saveMeetingSession } from '@/utils/meetingSession';
 import { AgendaCard } from './components/AgendaCard';
 import { AgendaForm } from './components/AgendaForm';
 import { ConsentCheck } from './components/ConsentCheck';
@@ -15,11 +18,14 @@ import {
   PARTICIPANTS_MIN,
   TITLE_MAX_LENGTH,
 } from './constants';
+import { getCreateMeetingErrorMessage } from './getCreateMeetingErrorMessage';
 import { getStartBlocker } from './getStartBlocker';
 import styles from './SetupPage.module.scss';
+import { toCreateMeetingPayload } from './toCreateMeetingPayload';
 import { useDragSort } from './useDragSort';
 
 export const SetupPage = () => {
+  const navigate = useNavigate();
   const [title, setTitle] = useState('');
   const [meetingType, setMeetingType] = useState(MEETING_TYPES[0].value);
   const [participants, setParticipants] = useState('');
@@ -28,6 +34,14 @@ export const SetupPage = () => {
   const [draft, setDraft] = useState(null);
   const [selectedId, setSelectedId] = useState(null);
   const [agreed, setAgreed] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  // 서버가 거절한 이유. 그때 보낸 body와 같을 때만 보여준다 (입력을 고치면 사라짐)
+  const [requestError, setRequestError] = useState(null);
+  // 셋업에 들어올 때 한 번 만드는 Idempotency-Key (버튼을 여러 번 눌러도 회의는 하나)
+  const idempotencyKeyRef = useRef(null);
+  if (idempotencyKeyRef.current == null) {
+    idempotencyKeyRef.current = crypto.randomUUID();
+  }
 
   useEffect(() => {
     const handlePointerDown = (event) => {
@@ -39,23 +53,52 @@ export const SetupPage = () => {
 
   const isTitleTooLong = title.length > TITLE_MAX_LENGTH;
   const startBlocker = getStartBlocker({ title, agendas, targetTime, agreed });
-  const canStart = !startBlocker;
+  const payload = toCreateMeetingPayload({
+    title,
+    meetingType,
+    participants,
+    targetTime,
+    agreed,
+    agendas,
+  });
+  const payloadKey = JSON.stringify(payload);
+  const visibleRequestError =
+    requestError?.payloadKey === payloadKey ? requestError : null;
+  const canStart = !startBlocker && !isSubmitting;
+  const notice = startBlocker ?? visibleRequestError;
 
-  const handleStart = () => {
+  const handleStart = async () => {
     // 라이브 화면 알림음(#23, #35)을 누르는 순간 미리 깨움
     // 아이폰 사파리 때문에 API 호출(await)보다 먼저 실행해야 함
     unlockMeetingAlert();
 
-    // TODO: 회의 생성 API(API-02) 연동 후 생성된 회의 화면으로 이동
-    // const { data } = await createMeeting(body);
-    // saveMeetingSession(data.meetingId, {
-    //   accessToken: data.accessToken,
-    //   hostRecoveryKey: data.hostRecoveryKey, // API-02에서만 한 번 받음
-    // });
-    // // 라이브 화면에 들어가면 팀원 초대 모달이 바로 열림 (#21, #22)
-    // navigate(`/meetings/${data.meetingId}/live`, {
-    //   state: { openInvite: true },
-    // });
+    if (!canStart) return;
+    setIsSubmitting(true);
+    setRequestError(null);
+
+    try {
+      const meeting = await createMeeting(payload, idempotencyKeyRef.current);
+      saveMeetingSession(meeting.meetingId, {
+        accessToken: meeting.accessToken,
+        hostRecoveryKey: meeting.hostRecoveryKey, // API-02에서만 한 번 받음
+        meetingMode: meeting.meetingMode,
+      });
+      // 라이브 화면에 들어가면 팀원 초대 모달이 바로 열림 (#21, #22)
+      navigate(`/meetings/${meeting.meetingId}/live`, {
+        replace: true,
+        state: { openInvite: true },
+      });
+    } catch (error) {
+      // 서버가 거절했으면 고친 body는 새 요청이므로 키를 바꿈
+      // 네트워크 오류·시간 초과는 회의가 만들어졌을 수 있어 같은 키로 다시 보냄
+      if (error.response) idempotencyKeyRef.current = crypto.randomUUID();
+      setRequestError({
+        payloadKey,
+        message: getCreateMeetingErrorMessage(error),
+        type: 'danger',
+      });
+      setIsSubmitting(false);
+    }
   };
 
   const handleParticipantsChange = (event) => {
@@ -232,10 +275,10 @@ export const SetupPage = () => {
         icon={canStart ? playWhite : playGray}
         onClick={handleStart}
         disabled={!canStart}
-        notice={startBlocker?.message}
-        noticeType={startBlocker?.type}
+        notice={notice?.message}
+        noticeType={notice?.type}
       >
-        회의 시작하기
+        {isSubmitting ? '회의를 만드는 중…' : '회의 시작하기'}
       </BottomBar>
     </div>
   );
