@@ -65,10 +65,12 @@ export const AgendaForm = ({ agendaCount, draft, onSubmit }) => {
     </p>
   );
 
+  // 오류 문구는 입력란 바로 아래, 등록된 키워드 위에 둔다
   const renderKeywordHelper = () => {
     if (keywords.length > 0) {
       return (
         <>
+          {keywordError}
           <ul className={styles.keywordChips}>
             {keywords.map((keyword, index) => (
               <li key={index} className={styles.keywordChip}>
@@ -84,7 +86,6 @@ export const AgendaForm = ({ agendaCount, draft, onSubmit }) => {
               </li>
             ))}
           </ul>
-          {keywordError}
         </>
       );
     }
