@@ -279,7 +279,7 @@ export const SetupPage = () => {
         notice={notice?.message}
         noticeType={notice?.type}
       >
-        {isSubmitting ? '회의를 만드는 중…' : '회의 만들기'}
+        {isSubmitting ? '회의를 만드는 중…' : '회의 입장하기'}
       </BottomBar>
     </div>
   );
