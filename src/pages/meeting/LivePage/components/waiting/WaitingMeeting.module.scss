@@ -1,0 +1,29 @@
+@use '@/styles/variables' as *;
+@use '@/styles/function' as *;
+
+.page {
+  @include flex(column, stretch, flex-start);
+  min-height: 100dvh;
+}
+
+.content {
+  @include flex(column, stretch, flex-start, rem(16px));
+  flex: 1;
+  padding: rem(32px) rem(20px);
+}
+
+.notice {
+  padding: rem(12px) rem(16px);
+  font-size: $font-size-14;
+  font-weight: $font-weight-bold;
+  line-height: 1.4;
+  letter-spacing: -0.03em;
+  color: $color-gray-800;
+  text-align: center;
+  background-color: $color-gray-100;
+  border-radius: rem(12px);
+}
+
+.timerArea {
+  @include flex(column, stretch, flex-start, rem(16px));
+}

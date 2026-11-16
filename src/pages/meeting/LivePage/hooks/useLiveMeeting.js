@@ -7,6 +7,40 @@ import { mockMeeting } from '../mockMeeting';
 const USE_MOCK =
   import.meta.env.DEV && import.meta.env.VITE_USE_MOCK === 'true';
 
+// 목업으로 대기 화면을 볼 때: 주소 뒤에 ?mockStatus=WAITING (&mockRole=MEMBER면 참여자)
+const getMockMeeting = () => {
+  const params = new URLSearchParams(window.location.search);
+  const role = params.get('mockRole') ?? mockMeeting.me.role;
+  const me = { ...mockMeeting.me, role };
+  const receivedAt = Date.now();
+
+  if (params.get('mockStatus') !== 'WAITING') {
+    return { ...mockMeeting, me, timer: { ...mockMeeting.timer, receivedAt } };
+  }
+
+  // 대기 중: 안건은 모두 PENDING, 경과 시간 0, currentAgendaId는 시작하면 진행될 첫 안건
+  const [firstAgenda] = mockMeeting.agendas;
+  return {
+    ...mockMeeting,
+    me,
+    status: 'WAITING',
+    transcripts: [],
+    agendas: mockMeeting.agendas.map((agenda) => ({
+      ...agenda,
+      status: 'PENDING',
+    })),
+    timer: {
+      ...mockMeeting.timer,
+      status: 'WAITING',
+      totalElapsedSeconds: 0,
+      currentAgendaId: firstAgenda.agendaId,
+      agendaAllocatedSeconds: firstAgenda.allocatedSeconds,
+      agendaElapsedSeconds: 0,
+      receivedAt,
+    },
+  };
+};
+
 // API-04 응답 + 화면에 필요한 값
 const toLiveMeeting = (data, session) => ({
   ...data,
@@ -20,12 +54,7 @@ const toLiveMeeting = (data, session) => ({
 export const useLiveMeeting = (meetingId) => {
   const navigate = useNavigate();
   const [meeting, setMeeting] = useState(() =>
-    USE_MOCK
-      ? {
-          ...mockMeeting,
-          timer: { ...mockMeeting.timer, receivedAt: Date.now() },
-        }
-      : null,
+    USE_MOCK ? getMockMeeting() : null,
   );
 
   // 연결 상태
@@ -89,6 +118,20 @@ export const useLiveMeeting = (meetingId) => {
     },
   });
 
+  // 진행자 [회의 시작]
+  // TODO: API-19 POST /meetings/{meetingId}/start → 응답 data.timer 적용
+  //       409(이미 시작)면 에러 없이 API-04로 다시 불러와 화면만 맞춤
+  //       참여자는 WS-01 meeting.started를 받아 같은 처리
+  const start = useCallback(() => {
+    setMeeting((prev) => {
+      const [firstAgenda, ...restAgendas] = prev.agendas;
+      return {
+        ...replaceTimer(prev, prev.timer, 'IN_PROGRESS'),
+        agendas: [{ ...firstAgenda, status: 'IN_PROGRESS' }, ...restAgendas],
+      };
+    });
+  }, []);
+
   // TODO: API-05 POST /meetings/{meetingId}/pause → 응답 data.timer 적용
   const pause = useCallback((currentTimer) => {
     setMeeting((prev) => replaceTimer(prev, currentTimer, 'PAUSED'));
@@ -120,6 +163,7 @@ export const useLiveMeeting = (meetingId) => {
   return {
     connection,
     meeting,
+    start,
     pause,
     resume,
     toggleMic,
