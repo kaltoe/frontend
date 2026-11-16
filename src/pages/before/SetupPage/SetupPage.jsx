@@ -83,7 +83,8 @@ export const SetupPage = () => {
         hostRecoveryKey: meeting.hostRecoveryKey, // API-02에서만 한 번 받음
         meetingMode: meeting.meetingMode,
       });
-      // 라이브 화면에 들어가면 팀원 초대 모달이 바로 열림 (#21, #22)
+      // 만든 회의는 대기(WAITING) 상태라 라이브 화면에서 진행자 대기 화면이 나옴
+      // 들어가면 팀원 초대 모달이 바로 열림 (#21, #22)
       navigate(`/meetings/${meeting.meetingId}/live`, {
         replace: true,
         state: { openInvite: true },
@@ -278,7 +279,7 @@ export const SetupPage = () => {
         notice={notice?.message}
         noticeType={notice?.type}
       >
-        {isSubmitting ? '회의를 만드는 중…' : '회의 시작하기'}
+        {isSubmitting ? '회의를 만드는 중…' : '회의 만들기'}
       </BottomBar>
     </div>
   );

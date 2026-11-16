@@ -72,7 +72,8 @@ export const JoinPage = () => {
           hostRecoveryKey: body.hostRecoveryKey,
         }),
       });
-      // 참여자·진행자 복구 모두 openInvite는 넘기지 않음 (초대 모달 자동 열림은 회의를 시작한 진행자만)
+      // 회의가 대기(WAITING) 중이면 라이브 화면이 API-04 상태를 보고 대기 화면을 보여줌
+      // 참여자·진행자 복구 모두 openInvite는 넘기지 않음 (초대 모달 자동 열림은 회의를 만든 진행자만)
       navigate(`/meetings/${meetingId}/live`, { replace: true });
     } catch (error) {
       setRequestError({ bodyKey, message: getSignInErrorMessage(error) });
