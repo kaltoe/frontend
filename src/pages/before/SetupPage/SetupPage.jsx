@@ -18,6 +18,7 @@ import {
   PARTICIPANTS_MIN,
   TITLE_MAX_LENGTH,
 } from './constants';
+import { distributeAgendaMinutes } from './distributeAgendaMinutes';
 import { getCreateMeetingErrorMessage } from './getCreateMeetingErrorMessage';
 import { getStartBlocker } from './getStartBlocker';
 import styles from './SetupPage.module.scss';
@@ -130,19 +131,37 @@ export const SetupPage = () => {
     );
   };
 
+  // 목표 시간을 정했으면 안건을 추가·삭제할 때마다 목표 시간을 안건 수만큼 다시 나눈다
+  // (정하지 않았으면 새 안건은 기본 10분, 나머지는 그대로)
   const handleSubmitAgenda = ({ name, keywords }) => {
     const id = crypto.randomUUID();
     setDraft(null);
-    setAgendas((prev) => [
-      ...prev,
-      { id, name, keywords, minutes: String(AGENDA_DEFAULT_MINUTES) },
-    ]);
+    setAgendas((prev) =>
+      distributeAgendaMinutes(
+        [
+          ...prev,
+          { id, name, keywords, minutes: String(AGENDA_DEFAULT_MINUTES) },
+        ],
+        targetTime,
+      ),
+    );
     setSelectedId(id);
   };
 
   const handleDeleteAgenda = (id) => {
-    setAgendas((prev) => prev.filter((agenda) => agenda.id !== id));
+    setAgendas((prev) =>
+      distributeAgendaMinutes(
+        prev.filter((agenda) => agenda.id !== id),
+        targetTime,
+      ),
+    );
     setSelectedId(null);
+  };
+
+  // 목표 시간을 바꾸면 이미 등록한 안건에도 다시 나눈다
+  const handleTargetTimeChange = (nextTargetTime) => {
+    setTargetTime(nextTargetTime);
+    setAgendas((prev) => distributeAgendaMinutes(prev, nextTargetTime));
   };
 
   // 수정할 안건은 목록에서 빼서 입력란으로 되돌린다. 다시 추가하면 목록 맨 뒤에 붙는다.
@@ -233,7 +252,10 @@ export const SetupPage = () => {
             )}
           </section>
 
-          <TargetTimeSlider value={targetTime} onChange={setTargetTime} />
+          <TargetTimeSlider
+            value={targetTime}
+            onChange={handleTargetTimeChange}
+          />
 
           <AgendaForm
             key={draft?.id ?? 'new'}
