@@ -15,3 +15,11 @@ export const signIn = async (meetingId, body) => {
   const response = await api.post(`/meetings/${meetingId}/sign-in`, body);
   return response.data.data;
 };
+
+// API-04 회의 현재 상태 조회
+export const getMeetingState = async (meetingId) => {
+  const response = await api.get(`/meetings/${meetingId}/state`, {
+    meetingId,
+  });
+  return response.data.data;
+};

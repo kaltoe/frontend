@@ -11,11 +11,10 @@ export const mockMeeting = {
     expiresAt: '2026-11-17T14:00:00+09:00',
   },
 
-  // TODO: 진행자 복구 키 (#22)는 API-04에 없고 API-02(회의 만들기) 응답에만 있음
+  // 진행자 복구 키 (#22)는 API-04에 없고 API-02(회의 만들기) 응답에만 있음
   // 회의 만들기 화면에서 받아 저장해두고 여기서 꺼내 써야 함. 없으면 팝업에서 숨김
   hostRecoveryKey: 'K7QM-2XPA',
 
-  // TODO: API-04 응답에 meetingMode가 없음. 참여자도 받을 수 있게 추가 요청 필요(확인 필요)
   meetingMode: 'IN_PERSON', // 'IN_PERSON'(대면) | 'REMOTE'(비대면)
 
   // status: 'PENDING'(대기) | 'IN_PROGRESS'(진행 중) | 'DONE'(끝남)
@@ -78,14 +77,14 @@ export const mockMeeting = {
 
   // 현재 안건의 확정 자막 (API-04 transcripts, WS-01 transcript.final)
   // offsetMs: 녹음 타임라인 위치(ms) → 자막 앞 시간 표시
-  // speakerName: 비대면(REMOTE)일 때 말한 사람 이름, 대면이면 null
-  //   TODO: API-04 transcripts에는 speakerName이 없음. 비대면 새로고침 시 이름이 빠지므로 추가 요청 필요
+  // participantId, speakerName: 비대면(REMOTE)일 때 말한 사람, 대면이면 null
   transcripts: [
     {
       utteranceId: 301,
       text: '지난주 캠페인 CTR이 2.4%로 목표보다 조금 높게 나왔어요.',
       offsetMs: 1000,
       agendaId: 12,
+      participantId: null,
       speakerName: null,
     },
     {
@@ -93,6 +92,7 @@ export const mockMeeting = {
       text: '전환율도 같이 확인해 보면 좋을 것 같아요. 지난달이랑 비교해서 어떤지 궁금해요.',
       offsetMs: 9000,
       agendaId: 12,
+      participantId: null,
       speakerName: null,
     },
   ],

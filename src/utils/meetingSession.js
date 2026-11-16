@@ -1,7 +1,6 @@
 // 회의 입장 정보를 회의 코드별로 localStorage에 저장 (API-01 비고)
 // - accessToken: API-02·API-03 응답. 새로고침·재접속 때 Sign In 없이 바로 입장
 // - hostRecoveryKey: API-02 응답에서만 한 번 받음 → 초대 모달(#22)에 보여줌
-// - meetingMode: API-02 응답. API-04에 없어서 진행자 화면 구성에 씀
 // 저장소가 막힌 브라우저(사생활 보호 모드 등)은 넘어감
 
 const STORAGE_PREFIX = 'kaltoe:meeting:';
