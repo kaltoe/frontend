@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { signIn } from '@/api/meeting';
+import { getEntryInfo, signIn } from '@/api/meeting';
 import { infoGray, joinGray, joinWhite, lock, people, person } from '@/assets';
 import { BackHeader } from '@/components/common/BackHeader/BackHeader';
 import { BottomBar } from '@/components/common/BottomBar/BottomBar';
 import { FieldLabel } from '@/components/common/FieldLabel/FieldLabel';
+import { LoadingView } from '@/components/common/LoadingView/LoadingView';
 import { unlockMeetingAlert } from '@/pages/meeting/LivePage/utils/meetingAlert';
 import { saveMeetingSession } from '@/utils/meetingSession';
 import { IconInput } from './components/IconInput';
@@ -12,9 +13,6 @@ import { RecoveryKeyField } from './components/RecoveryKeyField';
 import { NAME_MAX_LENGTH, PASSWORD_LENGTH } from './constants';
 import { getSignInErrorMessage } from './getSignInErrorMessage';
 import styles from './JoinPage.module.scss';
-
-// TODO: 회의 조회 API 연동 후 링크 코드(useParams의 code)로 받아온 값으로 교체
-const meeting = { title: '회의 제목', participantCount: 3 };
 
 // 진행자 복구 키가 있으면 이름·비밀번호는 보내지 않음 (서버도 보지 않음)
 const toSignInBody = ({ name, password, recoveryKey }) => {
@@ -34,6 +32,34 @@ export const JoinPage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   // 서버가 거절한 이유. 그때 보낸 body와 같을 때만 보여준다 (입력을 고치면 사라짐)
   const [requestError, setRequestError] = useState(null);
+
+  // API-01 회의 입장 정보 (제목, 지금 접속 중인 인원)
+  const [meeting, setMeeting] = useState(null);
+  const [loadError, setLoadError] = useState(null);
+
+  useEffect(() => {
+    let ignore = false;
+
+    getEntryInfo(meetingId)
+      .then((data) => {
+        if (!ignore) setMeeting(data);
+      })
+      .catch((error) => {
+        if (ignore) return;
+        // 없는 회의(404), 끝났거나 만료된 회의(410)는 만료 링크 화면으로
+        const status = error.response?.status;
+        if (status === 404 || status === 410) {
+          navigate('/invalid-link', { replace: true });
+          return;
+        }
+        // 네트워크 오류·요청 과다(429)
+        setLoadError(getSignInErrorMessage(error));
+      });
+
+    return () => {
+      ignore = true;
+    };
+  }, [meetingId, navigate]);
 
   const isNameEmpty = name.trim().length === 0;
   const isNameTooLong = name.length > NAME_MAX_LENGTH;
@@ -87,6 +113,24 @@ export const JoinPage = () => {
     );
   };
 
+  // 회의 정보를 불러오는 중이거나 불러오지 못했을 때
+  if (!meeting) {
+    return (
+      <div className={styles.page}>
+        <BackHeader title="회의 입장하기" />
+        <main className={`${styles.content} ${styles.statusContent}`}>
+          {loadError ? (
+            <p className={styles.loadError} role="alert">
+              {loadError}
+            </p>
+          ) : (
+            <LoadingView />
+          )}
+        </main>
+      </div>
+    );
+  }
+
   return (
     <div className={styles.page}>
       <BackHeader title="회의 입장하기" />
@@ -101,7 +145,7 @@ export const JoinPage = () => {
           </div>
           <div className={styles.participants}>
             <img src={people} alt="" />
-            <span>{meeting.participantCount}명 참여</span>
+            <span>{meeting.connectedCount}명 참여</span>
           </div>
         </div>
 
