@@ -31,6 +31,13 @@ export const InviteModal = ({ open, invite, recoveryKey, onClose }) => {
   const [copyToast, setCopyToast] = useState(null);
   const closeCopyToast = useCallback(() => setCopyToast(null), []);
 
+  // 모달이 닫히면 복사 토스트 비움
+  const [prevOpen, setPrevOpen] = useState(open);
+  if (open !== prevOpen) {
+    setPrevOpen(open);
+    if (!open) setCopyToast(null);
+  }
+
   useEffect(() => {
     if (!open) return undefined;
     const prevOverflow = document.body.style.overflow;
