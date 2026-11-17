@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getSummary } from '@/api/meeting';
+import { getSummary, retrySummary } from '@/api/meeting';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { SUMMARY_STATUS } from './constants';
 import { mockResult } from './mockResult';
@@ -27,6 +27,8 @@ export const useMeetingSummary = (meetingId, agendas, isMock) => {
   const [linesById, setLinesById] = useState(() =>
     isMock ? getMockLines(agendas) : {},
   );
+  // [다시 시도](API-12) 요청 중
+  const [isRetrying, setIsRetrying] = useState(false);
 
   // 오프라인이면 멈췄다가 다시 연결되면 이어서 부른다.
   const shouldFetch =
@@ -78,8 +80,32 @@ export const useMeetingSummary = (meetingId, agendas, isMock) => {
     };
   }, [meetingId, shouldFetch, navigate]);
 
+  // 요약 실패 화면의 [다시 시도] (API-12)
+  // 202를 받은 뒤에 PROCESSING으로 바꿔야, 아직 FAILED인 API-11 응답에 다시 확인이 멈추지 않는다.
+  const retry = async () => {
+    if (isRetrying) return;
+    setIsRetrying(true);
+    try {
+      await retrySummary(meetingId);
+      setStatus(SUMMARY_STATUS.PROCESSING);
+    } catch (error) {
+      const code = error.response?.status;
+      if (code === 401) {
+        navigate('/invalid-link', { replace: true });
+      } else if (code === 409) {
+        // 이미 다시 만드는 중이거나 FAILED가 아님 → API-11로 지금 상태를 다시 확인
+        setStatus(null);
+      }
+      // 네트워크·서버 오류는 실패 화면을 그대로 두어 다시 누를 수 있게 한다.
+    } finally {
+      setIsRetrying(false);
+    }
+  };
+
   return {
-    status,
+    // 다시 시도 요청 중에는 만드는 중 화면을 보여준다.
+    status: isRetrying ? SUMMARY_STATUS.PROCESSING : status,
+    retry,
     agendas: agendas.map((agenda) => ({
       ...agenda,
       summary: linesById[agenda.id] ?? [],

@@ -90,10 +90,6 @@ const ResultContent = ({ meetingId, meeting, readOnly, isMock }) => {
 
   const closeCopyToast = useCallback(() => setCopyToastKey(null), []);
 
-  const handleRetrySummary = () => {
-    // TODO: 요약 다시 생성 API(API-12) 연동
-  };
-
   const copyText = async (text) => {
     try {
       await navigator.clipboard.writeText(text);
@@ -170,7 +166,7 @@ const ResultContent = ({ meetingId, meeting, readOnly, isMock }) => {
                 meeting={meeting}
                 agendas={summary.agendas}
                 status={summary.status}
-                onRetry={handleRetrySummary}
+                onRetry={summary.retry}
                 onCopy={handleCopySummary}
               />
             )}
