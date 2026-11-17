@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getMeetingState } from '@/api/meeting';
+import { getMeetingState, pauseMeeting, resumeMeeting } from '@/api/meeting';
 import { getMeetingSession } from '@/utils/meetingSession';
 import { mockMeeting } from '../mockMeeting';
 
@@ -48,6 +48,25 @@ const toLiveMeeting = (data, session) => ({
   hostRecoveryKey: session?.hostRecoveryKey ?? null,
   partialTranscript: null,
   timer: { ...data.timer, receivedAt: Date.now() },
+});
+
+const replaceTimer = (prev, currentTimer, status) => ({
+  ...prev,
+  status,
+  timer: {
+    ...prev.timer,
+    status,
+    totalElapsedSeconds: currentTimer.totalElapsedSeconds,
+    agendaElapsedSeconds: currentTimer.agendaElapsedSeconds,
+    receivedAt: Date.now(),
+  },
+});
+
+// 서버가 보낸 timer로 교체 (API-05·06 응답, 이후 WebSocket 이벤트)
+const applyServerTimer = (prev, serverTimer) => ({
+  ...prev,
+  status: serverTimer.status,
+  timer: { ...serverTimer, receivedAt: Date.now() },
 });
 
 // API-04로 회의 상태를 불러오고, 이후 WebSocket 이벤트의 timer로 스냅샷 교체
@@ -105,19 +124,6 @@ export const useLiveMeeting = (meetingId) => {
     };
   }, [meetingId, navigate]);
 
-  // 시간을 새 스냅샷으로 고정
-  const replaceTimer = (prev, currentTimer, status) => ({
-    ...prev,
-    status,
-    timer: {
-      ...prev.timer,
-      status,
-      totalElapsedSeconds: currentTimer.totalElapsedSeconds,
-      agendaElapsedSeconds: currentTimer.agendaElapsedSeconds,
-      receivedAt: Date.now(),
-    },
-  });
-
   // 진행자 [회의 시작]
   // TODO: API-19 POST /meetings/{meetingId}/start → 응답 data.timer 적용
   //       409(이미 시작)면 에러 없이 API-04로 다시 불러와 화면만 맞춤
@@ -132,15 +138,63 @@ export const useLiveMeeting = (meetingId) => {
     });
   }, []);
 
-  // TODO: API-05 POST /meetings/{meetingId}/pause → 응답 data.timer 적용
-  const pause = useCallback((currentTimer) => {
-    setMeeting((prev) => replaceTimer(prev, currentTimer, 'PAUSED'));
-  }, []);
+  const syncMeeting = useCallback(async () => {
+    try {
+      const data = await getMeetingState(meetingId);
+      if (data.status === 'ENDED') {
+        navigate(`/result/${meetingId}`, { replace: true });
+        return;
+      }
+      setMeeting(toLiveMeeting(data, getMeetingSession(meetingId)));
+    } catch (error) {
+      if (error.response?.status === 401) {
+        navigate(`/m/${meetingId}`, { replace: true });
+      }
+    }
+  }, [meetingId, navigate]);
 
-  // TODO: API-06 POST /meetings/{meetingId}/resume → 응답 data.timer 적용
-  const resume = useCallback((currentTimer) => {
-    setMeeting((prev) => replaceTimer(prev, currentTimer, 'IN_PROGRESS'));
-  }, []);
+  // 일시 정지 및 재개 요청 중에는 다시 누르지 않게 막음 (여러 번 눌림 방지)
+  const isTimerRequestingRef = useRef(false);
+
+  // 누르는 즉시 화면에 반영하고, 서버 응답 timer로 다시 맞춤
+  const requestTimerChange = useCallback(
+    async (status, currentTimer, request) => {
+      if (isTimerRequestingRef.current) return;
+      setMeeting((prev) => replaceTimer(prev, currentTimer, status));
+      if (USE_MOCK) return;
+
+      isTimerRequestingRef.current = true;
+      try {
+        const data = await request(meetingId);
+        setMeeting((prev) => applyServerTimer(prev, data.timer));
+      } catch (error) {
+        const errorStatus = error.response?.status;
+        if (errorStatus === 401) {
+          navigate(`/m/${meetingId}`, { replace: true });
+        } else if (errorStatus === 410) {
+          navigate(`/result/${meetingId}`, { replace: true });
+        } else {
+          await syncMeeting();
+        }
+      } finally {
+        isTimerRequestingRef.current = false;
+      }
+    },
+    [meetingId, navigate, syncMeeting],
+  );
+
+  // 진행자 [일시 정지] (API-05)
+  const pause = useCallback(
+    (currentTimer) => requestTimerChange('PAUSED', currentTimer, pauseMeeting),
+    [requestTimerChange],
+  );
+
+  // 진행자 [재생] (API-06)
+  const resume = useCallback(
+    (currentTimer) =>
+      requestTimerChange('IN_PROGRESS', currentTimer, resumeMeeting),
+    [requestTimerChange],
+  );
 
   // TODO: 실제 마이크 켜고 끄기 + WS-01 mic.status 전송
   const toggleMic = useCallback(() => {

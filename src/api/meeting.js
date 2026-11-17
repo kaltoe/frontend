@@ -33,6 +33,22 @@ export const getMeetingState = async (meetingId) => {
   return response.data.data;
 };
 
+// API-05 일시 정지 (진행자만)
+export const pauseMeeting = async (meetingId) => {
+  const response = await api.post(`/meetings/${meetingId}/pause`, null, {
+    meetingId,
+  });
+  return response.data.data;
+};
+
+// API-06 회의 재개 (진행자만)
+export const resumeMeeting = async (meetingId) => {
+  const response = await api.post(`/meetings/${meetingId}/resume`, null, {
+    meetingId,
+  });
+  return response.data.data;
+};
+
 // API-10 회의 결과 조회
 // 끝낸 안건만 오고, 소요 시간을 계산하지 못하면(UNKNOWN) 시간 값이 모두 null
 // 토큰이 없거나 만료되면 401, 끝나지 않은 회의는 409
