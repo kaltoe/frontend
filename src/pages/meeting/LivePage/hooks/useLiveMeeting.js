@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
+  endMeeting,
   getMeetingState,
   nextAgenda,
   pauseMeeting,
@@ -280,6 +281,30 @@ export const useLiveMeeting = (meetingId) => {
     [meetingId, handleControlError],
   );
 
+  // 회의 종료 요청 중 (진행자 버튼 모두 막음)
+  const [isEnding, setIsEnding] = useState(false);
+
+  // 진행자 [종료] → 확인 모달 [확인] (API-08)
+  const end = useCallback(async () => {
+    if (isControlRequestingRef.current) return;
+    if (USE_MOCK) {
+      navigate(`/result/${meetingId}`, { replace: true });
+      return;
+    }
+
+    isControlRequestingRef.current = true;
+    setIsEnding(true);
+    try {
+      await endMeeting(meetingId);
+      navigate(`/result/${meetingId}`, { replace: true });
+    } catch (error) {
+      setIsEnding(false);
+      await handleControlError(error);
+    } finally {
+      isControlRequestingRef.current = false;
+    }
+  }, [meetingId, navigate, handleControlError]);
+
   // TODO: 실제 마이크 켜고 끄기 + WS-01 mic.status 전송
   const toggleMic = useCallback(() => {
     setMeeting((prev) => ({
@@ -305,6 +330,8 @@ export const useLiveMeeting = (meetingId) => {
     pause,
     resume,
     goToNextAgenda,
+    end,
+    isEnding,
     toggleMic,
     closeOfftopic,
     dismissOfftopic,

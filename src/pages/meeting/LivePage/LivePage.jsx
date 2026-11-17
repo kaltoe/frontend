@@ -67,6 +67,8 @@ const LiveMeeting = ({
   pause,
   resume,
   goToNextAgenda,
+  end,
+  isEnding,
   toggleMic,
   closeOfftopic,
   dismissOfftopic,
@@ -155,7 +157,7 @@ const LiveMeeting = ({
     if (confirmModal === 'next') {
       goToNextAgenda(timer);
     } else if (confirmModal === 'end') {
-      // TODO: API-08 POST /meetings/{meetingId}/end → 회의 후 화면으로 이동
+      end();
     }
     setConfirmModal(null);
   };
@@ -207,6 +209,7 @@ const LiveMeeting = ({
         canUseMic={canUseMic}
         isPaused={isPaused}
         isLastAgenda={currentIndex === meeting.agendas.length - 1}
+        isEnding={isEnding}
         onMicToggle={toggleMic}
         onPauseToggle={handlePauseToggle}
         onNext={() => setConfirmModal('next')}
