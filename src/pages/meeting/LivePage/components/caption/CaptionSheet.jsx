@@ -6,7 +6,7 @@ import {
   meetingIconMicOffSlash,
   meetingIconMicOn,
 } from '@/assets';
-import { getEmptyCaptionText } from '../../utils/captionStatus';
+import { EMPTY_CAPTION_TEXT } from '../../utils/captionStatus';
 import { formatTimer } from '../../utils/formatTimer';
 import { getTimerState } from '../../utils/timerState';
 import { CaptionBadge, CaptionLine } from './Caption';
@@ -101,7 +101,7 @@ export const CaptionSheet = ({
 
         <div className={styles.listArea} ref={listRef}>
           {isEmpty ? (
-            <p className={styles.empty}>{getEmptyCaptionText(status)}</p>
+            <p className={styles.empty}>{EMPTY_CAPTION_TEXT}</p>
           ) : (
             <ul className={styles.list} aria-live="polite">
               {transcripts.map((transcript) => (

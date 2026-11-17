@@ -235,6 +235,8 @@ const LiveMeeting = ({
       <InviteModal
         open={isWaiting || isInviteOpen}
         invite={meeting.invite}
+        connectedCount={meeting.connectedCount}
+        attendeeCount={meeting.attendeeCount}
         recoveryKey={isHost ? meeting.hostRecoveryKey : null}
         footer={inviteFooter}
         isStarting={isStarting}

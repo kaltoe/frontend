@@ -5,6 +5,7 @@ import {
   meetingIconCopyCheck,
   meetingIconCopySmall,
   meetingIconLink,
+  meetingIconPeople,
   meetingIconTime,
 } from '@/assets';
 import { Toast } from '../common/Toast';
@@ -32,9 +33,16 @@ const toDisplayUrl = (url) => url.replace(/^https?:\/\//, '');
 // - 'start': 대기 중 진행자 [회의 시작하기]
 // - 'waiting': 대기 중 참여자 안내 문구
 // 대기 중에는 회의가 시작되기 전까지 닫을 수 없음
+// 입장 인원: 접속 중 인원(connectedCount)/참석 예정 인원(attendeeCount)
+// 참석 인원을 정하지 않은 회의는 접속 중 인원만
+const formatAttendees = (connectedCount, attendeeCount) =>
+  attendeeCount ? `${connectedCount}/${attendeeCount}` : `${connectedCount}`;
+
 export const InviteModal = ({
   open,
   invite,
+  connectedCount,
+  attendeeCount,
   recoveryKey,
   footer = 'close',
   isStarting = false,
@@ -92,9 +100,25 @@ export const InviteModal = ({
               <div className={styles.inviteMain}>
                 <div className={styles.inviteInfo}>
                   <div className={styles.texts}>
-                    <h2 id="invite-modal-title" className={styles.title}>
-                      팀원을 초대해요.
-                    </h2>
+                    <div className={styles.titleRow}>
+                      <h2 id="invite-modal-title" className={styles.title}>
+                        팀원을 초대해요.
+                      </h2>
+                      {connectedCount != null && (
+                        <p
+                          className={styles.attendees}
+                          aria-label={`입장 인원 ${formatAttendees(connectedCount, attendeeCount)}명`}
+                        >
+                          <img
+                            src={meetingIconPeople}
+                            alt=""
+                            width={20}
+                            height={20}
+                          />
+                          {formatAttendees(connectedCount, attendeeCount)}
+                        </p>
+                      )}
+                    </div>
                     <p className={styles.description}>
                       코드나 링크를 공유하면 바로 들어올 수 있어요.
                     </p>
@@ -111,7 +135,7 @@ export const InviteModal = ({
 
                 <p className={styles.expiry}>
                   <img src={meetingIconTime} alt="" width={14} height={14} />
-                  코드와 링크는 2주 후 만료돼요.
+                  코드와 링크는 7일 후 만료돼요.
                 </p>
               </div>
 

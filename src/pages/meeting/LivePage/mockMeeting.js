@@ -3,6 +3,7 @@ export const mockMeeting = {
   title: '회의 제목',
   status: 'IN_PROGRESS', // 'WAITING' | 'IN_PROGRESS' | 'PAUSED' | 'ENDED'
   connectedCount: 3, // 지금 접속 중인 인원
+  attendeeCount: 5, // 셋업에서 정한 참석 인원. 정하지 않았으면 null
 
   // 팀원 초대 팝업 (#21)
   invite: {
