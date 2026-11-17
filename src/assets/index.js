@@ -72,6 +72,7 @@ import meetingIconMicOffBody from './meeting/icon-mic-off-body.svg';
 import meetingIconMicOffSlash from './meeting/icon-mic-off-slash.svg';
 import meetingIconMicOffSmall from './meeting/icon-mic-off-small.svg';
 import meetingIconMicOn from './meeting/icon-mic-on.svg';
+import meetingIconPeople from './meeting/icon-people.svg';
 import meetingIconStop from './meeting/icon-stop.svg';
 import meetingIconTime from './meeting/icon-time.svg';
 import meetingLogoRun from './meeting/logo-run.svg';
@@ -151,6 +152,7 @@ export {
   meetingIconMicOffSlash,
   meetingIconMicOffSmall,
   meetingIconMicOn,
+  meetingIconPeople,
   meetingIconStop,
   meetingIconTime,
   meetingLogoRun,
