@@ -9,6 +9,8 @@ export const RECORDING_STATUS = {
   PROCESSING: 'PROCESSING',
   READY: 'READY',
   FAILED: 'FAILED',
+  // 보관 기간이 지남 (410 RECORDING_EXPIRED). 서버 값이 아니라 화면에서만 쓴다
+  EXPIRED: 'EXPIRED',
 };
 
 const POLLING_INTERVAL_MS = 3000;
@@ -71,8 +73,18 @@ export const useMeetingRecording = (meetingId, isMock) => {
         setIsRefreshing(false);
       } catch (error) {
         if (ignore) return;
-        if (error.response?.status === 401) {
+        const code = error.response?.status;
+        if (code === 401) {
           goToNoResultAccess(navigate);
+          return;
+        }
+        // 보관 기간이 지남 → 결제 잠금 창
+        if (code === 410) {
+          setRecording({
+            ...EMPTY_RECORDING,
+            status: RECORDING_STATUS.EXPIRED,
+          });
+          setIsRefreshing(false);
           return;
         }
         // 네트워크·서버 오류는 잠시 뒤 다시 부른다.

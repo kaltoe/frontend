@@ -4,7 +4,6 @@ import { mockResult } from './mockResult';
 // 공유 값은 아직 연동 전이라 임시 데이터를 붙인다.
 // TODO: API-15 연동 후 임시 데이터 대신 각 응답으로 교체
 export const toResultMeeting = (result) => ({
-  isScriptLocked: mockResult.isScriptLocked,
   shareCode: mockResult.shareCode,
   shareExpiresAt: mockResult.shareExpiresAt,
   title: result.title,

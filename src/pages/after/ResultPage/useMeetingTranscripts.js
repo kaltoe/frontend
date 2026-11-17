@@ -8,6 +8,8 @@ export const TRANSCRIPTS_STATUS = {
   LOADING: 'loading',
   DONE: 'done',
   ERROR: 'error',
+  // 보관 기간이 지나 잠김 (410)
+  LOCKED: 'locked',
 };
 
 // 임시 데이터는 안건 순서대로 발화를 붙인다.
@@ -17,6 +19,22 @@ const getMockGroups = (agendas) =>
     title: agenda.title,
     startSeconds: agenda.startSeconds,
     utterances: mockResult.agendaDetails[index]?.utterances ?? [],
+  }));
+
+// 잠긴 회의 내용 자리에 흐리게 깔아 둘 글. 실제 기록은 받지 못한다.
+const LOCKED_LINE =
+  '잠긴 회의 내용입니다. 잠긴 회의 내용입니다. 잠긴 회의 내용입니다.';
+const getLockedGroups = (agendas) =>
+  agendas.map((agenda) => ({
+    id: agenda.id,
+    title: agenda.title,
+    startSeconds: agenda.startSeconds,
+    utterances: [0, 1, 2].map((index) => ({
+      id: `${agenda.id}-locked-${index}`,
+      startSeconds: (agenda.startSeconds ?? 0) + index * 15,
+      speaker: null,
+      text: LOCKED_LINE,
+    })),
   }));
 
 // API-14 응답을 회의 내용 탭에서 쓰는 모양으로 바꾼다.
@@ -64,8 +82,15 @@ export const useMeetingTranscripts = (meetingId, agendas, isMock) => {
       })
       .catch((error) => {
         if (ignore) return;
-        if (error.response?.status === 401) {
+        const code = error.response?.status;
+        if (code === 401) {
           goToNoResultAccess(navigate);
+          return;
+        }
+        // 보관 기간이 지남 → 결제 잠금 창
+        if (code === 410) {
+          setGroups(getLockedGroups(agendas));
+          setStatus(TRANSCRIPTS_STATUS.LOCKED);
           return;
         }
         // 네트워크 오류·서버 오류

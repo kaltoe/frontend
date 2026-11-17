@@ -54,7 +54,6 @@ export const mockResult = {
 
   audioUrl: null,
   recordingSeconds: 1680,
-  isScriptLocked: false,
   shareCode: 'mock-share-code',
   shareExpiresAt: '2026-11-15T00:00:00+09:00',
   agendaDetails: [

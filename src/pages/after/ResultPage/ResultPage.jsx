@@ -23,7 +23,10 @@ import { useAudioPlayer } from './useAudioPlayer';
 import { RECORDING_STATUS, useMeetingRecording } from './useMeetingRecording';
 import { useMeetingResult } from './useMeetingResult';
 import { useMeetingSummary } from './useMeetingSummary';
-import { useMeetingTranscripts } from './useMeetingTranscripts';
+import {
+  TRANSCRIPTS_STATUS,
+  useMeetingTranscripts,
+} from './useMeetingTranscripts';
 
 // readOnly: 공유 링크로 들어온 화면. 공유 버튼 없이 볼 수 있는 기한을 알려준다.
 export const ResultPage = ({ readOnly = false }) => {
@@ -90,6 +93,11 @@ const ResultContent = ({ meetingId, meeting, readOnly, isMock }) => {
 
   // API-13 녹음 (합치는 중이면 3초마다 다시 확인)
   const recording = useMeetingRecording(meetingId, isMock);
+  // 녹음이나 회의 내용의 보관 기간이 지나면(410) 회의 내용 탭을 결제 잠금 창으로 가린다.
+  // 잠그는 기간은 서버가 정하므로 서버만 바뀌면 화면은 그대로 따른다.
+  const isScriptLocked =
+    transcripts.status === TRANSCRIPTS_STATUS.LOCKED ||
+    recording.status === RECORDING_STATUS.EXPIRED;
   const player = useAudioPlayer({
     fallbackDuration: recording.durationSeconds,
     onSourceError: recording.refreshUrl,
@@ -130,8 +138,21 @@ const ResultContent = ({ meetingId, meeting, readOnly, isMock }) => {
   );
 
   // 녹음이 준비되기 전이나 만들지 못했으면 플레이어 자리에 안내 문구를 보여준다.
-  const audioPlayer =
-    recording.status === RECORDING_STATUS.READY ? (
+  // 잠겼으면 플레이어를 숨긴다.
+  const getAudioPlayer = () => {
+    if (isScriptLocked) return null;
+
+    if (recording.status !== RECORDING_STATUS.READY) {
+      return (
+        <p className={styles.playerNotice} role="status">
+          {recording.status === RECORDING_STATUS.FAILED
+            ? '회의록을 만들지 못했어요.'
+            : '회의록을 정리하고 있어요.'}
+        </p>
+      );
+    }
+
+    return (
       <AudioPlayer
         currentTime={player.currentTime}
         duration={player.duration}
@@ -139,13 +160,9 @@ const ResultContent = ({ meetingId, meeting, readOnly, isMock }) => {
         onTogglePlay={player.togglePlay}
         onSeek={player.seek}
       />
-    ) : (
-      <p className={styles.playerNotice} role="status">
-        {recording.status === RECORDING_STATUS.FAILED
-          ? '회의록을 만들지 못했어요.'
-          : '회의록을 정리하고 있어요.'}
-      </p>
     );
+  };
+  const audioPlayer = getAudioPlayer();
 
   const copyToast = copyToastKey && (
     <Toast
@@ -192,7 +209,7 @@ const ResultContent = ({ meetingId, meeting, readOnly, isMock }) => {
                 meeting={meeting}
                 transcripts={transcripts}
                 highlight={scriptHighlight}
-                isLocked={meeting.isScriptLocked}
+                isLocked={isScriptLocked}
                 onSelect={handleSelectScript}
               />
             )}
