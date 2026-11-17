@@ -87,9 +87,6 @@ const applyStart = (prev, timer) => ({
   ),
 });
 
-// 대기 중 참여자가 회의 상태를 다시 확인하는 간격 (WS-01 meeting.started 연동 전 임시)
-const WAITING_POLL_MS = 3000;
-
 // 안건 전환 결과 반영 (API-07 응답, WS-01 agenda.changed도 같은 모양)
 const applyAgendaChange = (prev, { previousAgenda, currentAgenda, timer }) => ({
   ...applyServerTimer(prev, timer),
@@ -309,17 +306,6 @@ export const useLiveMeeting = (meetingId) => {
     }
   }, [meetingId, handleControlError]);
 
-  // 대기 중인 참여자: 진행자가 시작했는지 3초마다 확인 (API-04)
-  // 시작되면 받은 상태로 라이브 화면이 됨
-  // TODO: WS-01 meeting.started를 받으면 이 확인은 지움
-  const isWaitingMember =
-    meeting?.status === 'WAITING' && meeting.me.role !== 'HOST';
-  useEffect(() => {
-    if (USE_MOCK || !isWaitingMember) return undefined;
-    const id = setInterval(syncMeeting, WAITING_POLL_MS);
-    return () => clearInterval(id);
-  }, [isWaitingMember, syncMeeting]);
-
   // WS-01 상태 동기화 (API-04로 처음 불러온 뒤 연결)
   const handleSocketEvent = useCallback(
     ({ type, data }) => {
@@ -345,10 +331,16 @@ export const useLiveMeeting = (meetingId) => {
     [meetingId, navigate],
   );
 
-  // 재연결 시 API-04로 상태를 맞춤
+  // 대기 중인지 (소켓 콜백에서 최신 값을 보기 위해 ref로 둠)
+  const isWaitingRef = useRef(false);
+  useEffect(() => {
+    isWaitingRef.current = meeting?.status === 'WAITING';
+  });
+
+  // 연결되면 API-04로 상태를 맞춤
   const handleSocketOpen = useCallback(
     async ({ isReconnect }) => {
-      if (!isReconnect) return;
+      if (!isReconnect && !isWaitingRef.current) return;
       await syncMeeting();
       setConnection('connected');
     },
