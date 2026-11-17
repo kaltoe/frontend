@@ -321,7 +321,29 @@ export const useLiveMeeting = (meetingId) => {
   }, [isWaitingMember, syncMeeting]);
 
   // WS-01 상태 동기화 (API-04로 처음 불러온 뒤 연결)
-  const handleSocketEvent = useCallback(() => {}, []);
+  const handleSocketEvent = useCallback(
+    ({ type, data }) => {
+      switch (type) {
+        case 'meeting.started':
+          setMeeting((prev) => applyStart(prev, data.timer));
+          break;
+        case 'meeting.paused':
+        case 'meeting.resumed':
+        case 'timer.sync': // 진행 중 30초마다 시간 보정
+          setMeeting((prev) => applyServerTimer(prev, data.timer));
+          break;
+        case 'agenda.changed':
+          setMeeting((prev) => applyAgendaChange(prev, data));
+          break;
+        case 'meeting.ended':
+          navigate(`/result/${meetingId}`, { replace: true });
+          break;
+        default:
+          break;
+      }
+    },
+    [meetingId, navigate],
+  );
 
   // 재연결 시 API-04로 상태를 맞춤
   const handleSocketOpen = useCallback(
