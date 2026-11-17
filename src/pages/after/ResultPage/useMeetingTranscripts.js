@@ -1,7 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getTranscripts } from '@/api/meeting';
-import { goToNoResultAccess } from '@/pages/after/ExpiredLinkPage/expiredLinkReason';
+import { getSharedTranscripts } from '@/api/share';
+import {
+  goToInvalidShareLink,
+  goToNoResultAccess,
+  isInvalidShareLinkError,
+} from '@/pages/after/ExpiredLinkPage/expiredLinkReason';
 import { mockResult } from './mockResult';
 
 export const TRANSCRIPTS_STATUS = {
@@ -45,8 +50,9 @@ const getLockedGroups = (agendas) => {
   }));
 };
 
-// API-14 응답을 회의 내용 탭에서 쓰는 모양으로 바꾼다.
+// API-14(API-17) 응답을 회의 내용 탭에서 쓰는 모양으로 바꾼다.
 // 안건 위치(startSeconds)는 API-10 안건의 녹음 시작 위치를 쓴다.
+// 공유 전체 기록(API-17)에는 utteranceId가 없어 안건 안의 순서로 만든다.
 const toGroups = (data, agendas) =>
   data.groups.map((group) => ({
     id: group.agendaId,
@@ -54,8 +60,8 @@ const toGroups = (data, agendas) =>
     startSeconds:
       agendas.find((agenda) => agenda.id === group.agendaId)?.startSeconds ??
       null,
-    utterances: group.items.map((item) => ({
-      id: item.utteranceId,
+    utterances: group.items.map((item, index) => ({
+      id: item.utteranceId ?? `${group.agendaId}-${index}`,
       startSeconds: item.offsetMs / 1000,
       speaker: item.speakerLabel,
       text: item.text,
@@ -63,11 +69,12 @@ const toGroups = (data, agendas) =>
   }));
 
 // API-14 전체 기록 조회. 처음 들어올 때 한 번 부른다.
+// shareId가 있으면(공유 화면) API-17 공유 전체 기록을 부른다.
 // 대면 회의의 녹음 후처리(화자 구분)가 끝난 기록은 새로고침하면 받는다.
 // agendas: API-10 안건 목록
 // isLocked: 종료 후 기간이 지나 잠겼으면 기록을 받지 않고 흐리게 가릴 자리 글만 깔아 둔다.
 export const useMeetingTranscripts = (
-  meetingId,
+  { meetingId, shareId },
   agendas,
   { isMock, isLocked },
 ) => {
@@ -89,7 +96,11 @@ export const useMeetingTranscripts = (
 
     let ignore = false;
 
-    getTranscripts(meetingId)
+    const request = shareId
+      ? getSharedTranscripts(shareId)
+      : getTranscripts(meetingId);
+
+    request
       .then((data) => {
         if (ignore) return;
         setGroups(toGroups(data, agendas));
@@ -97,13 +108,18 @@ export const useMeetingTranscripts = (
       })
       .catch((error) => {
         if (ignore) return;
+        // 공유 링크가 없거나 만료됨
+        if (shareId && isInvalidShareLinkError(error)) {
+          goToInvalidShareLink(navigate);
+          return;
+        }
         const code = error.response?.status;
-        if (code === 401) {
+        if (!shareId && code === 401) {
           goToNoResultAccess(navigate);
           return;
         }
         // 보관 기간이 지남 → 결제 잠금 창
-        if (code === 410) {
+        if (!shareId && code === 410) {
           setGroups(getLockedGroups(agendas));
           setStatus(TRANSCRIPTS_STATUS.LOCKED);
           return;
@@ -115,7 +131,7 @@ export const useMeetingTranscripts = (
     return () => {
       ignore = true;
     };
-  }, [meetingId, agendas, isMock, isLocked, navigate, requestKey]);
+  }, [meetingId, shareId, agendas, isMock, isLocked, navigate, requestKey]);
 
   const retry = () => {
     setStatus(TRANSCRIPTS_STATUS.LOADING);

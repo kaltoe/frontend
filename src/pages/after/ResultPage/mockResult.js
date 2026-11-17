@@ -1,7 +1,6 @@
-// 아직 연동하지 않은 값의 임시 데이터
-// - 결과 탭 값: API-10 응답 모양. 공유 화면(API-16)을 연동하기 전까지 공유 화면에서 쓴다
-// - summary: API-11(공유 화면·VITE_USE_MOCK에서만), utterances: API-14(공유 화면·VITE_USE_MOCK에서만), audioUrl·recordingSeconds: API-13(공유 화면·VITE_USE_MOCK에서만), shareId: API-15(VITE_USE_MOCK에서만), shareExpiresAt: API-16
-// TODO: 위 API를 모두 연동한 뒤 삭제
+// 개발 중 VITE_USE_MOCK=true일 때 서버 없이 보는 임시 데이터
+// - 결과 탭 값: API-10 응답 모양
+// - summary: API-11, utterances: API-14, audioUrl·recordingSeconds: API-13, shareId: API-15, shareExpiresAt: API-16
 const createUtterances = (agendaId, startSeconds) =>
   [0, 15, 40, 70].map((offset, index) => ({
     id: `${agendaId}-${index}`,

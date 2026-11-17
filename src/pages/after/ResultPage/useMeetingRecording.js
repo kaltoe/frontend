@@ -1,7 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getRecording } from '@/api/meeting';
-import { goToNoResultAccess } from '@/pages/after/ExpiredLinkPage/expiredLinkReason';
+import { getSharedRecording } from '@/api/share';
+import {
+  goToInvalidShareLink,
+  goToNoResultAccess,
+  isInvalidShareLinkError,
+} from '@/pages/after/ExpiredLinkPage/expiredLinkReason';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { mockResult } from './mockResult';
 
@@ -29,7 +34,11 @@ const EMPTY_RECORDING = { status: null, url: null, durationSeconds: null };
 // 회의가 끝나면 서버가 기기별 녹음을 하나로 합치는 동안(PROCESSING) 3초마다 다시 확인한다.
 // status가 null이면 아직 첫 응답을 받기 전이다.
 // isLocked: 종료 후 기간이 지나 잠겼으면 녹음을 받지 않는다.
-export const useMeetingRecording = (meetingId, { isMock, isLocked }) => {
+// shareId가 있으면(공유 화면) API-18 공유 녹음을 부른다. 응답은 API-13과 같다.
+export const useMeetingRecording = (
+  { meetingId, shareId },
+  { isMock, isLocked },
+) => {
   const navigate = useNavigate();
   const isOnline = useOnlineStatus();
 
@@ -57,7 +66,9 @@ export const useMeetingRecording = (meetingId, { isMock, isLocked }) => {
 
     const load = async () => {
       try {
-        const data = await getRecording(meetingId);
+        const data = shareId
+          ? await getSharedRecording(shareId)
+          : await getRecording(meetingId);
         if (ignore) return;
 
         if (data.status === RECORDING_STATUS.PROCESSING) {
@@ -75,12 +86,17 @@ export const useMeetingRecording = (meetingId, { isMock, isLocked }) => {
         setIsRefreshing(false);
       } catch (error) {
         if (ignore) return;
+        // 공유 링크가 없거나 만료됨
+        if (shareId && isInvalidShareLinkError(error)) {
+          goToInvalidShareLink(navigate);
+          return;
+        }
         const code = error.response?.status;
-        if (code === 401) {
+        if (!shareId && code === 401) {
           goToNoResultAccess(navigate);
           return;
         }
-        // 보관 기간이 지남 → 결제 잠금 창
+        // 보관 기간이 지남 → 결제 잠금 창 (공유 화면은 플레이어만 숨김)
         if (code === 410) {
           setRecording({
             ...EMPTY_RECORDING,
@@ -100,7 +116,7 @@ export const useMeetingRecording = (meetingId, { isMock, isLocked }) => {
       ignore = true;
       clearTimeout(timerId);
     };
-  }, [meetingId, shouldFetch, navigate]);
+  }, [meetingId, shareId, shouldFetch, navigate]);
 
   // 재생 주소(1시간)가 만료되거나 403이 나면 다시 불러 주소만 바꾼다.
   const refreshUrl = () => {
