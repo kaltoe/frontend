@@ -66,3 +66,25 @@ export const retrySummary = async (meetingId) => {
   );
   return response.data.data;
 };
+
+// API-13 녹음 조회
+// 응답: { status: PROCESSING | READY | FAILED, url, urlExpiresAt, durationMs, mimeType }
+// READY면 url(1시간짜리 주소)을 audio src에 쓴다. PROCESSING이면 url이 null이라 3초마다 다시 부른다
+// 보관 기간이 지나면 410 RECORDING_EXPIRED
+export const getRecording = async (meetingId) => {
+  const response = await api.get(`/meetings/${meetingId}/recording`, {
+    meetingId,
+  });
+  return response.data.data;
+};
+
+// API-14 전체 기록 조회
+// 응답: { source, groups: [{ agendaId, orderIndex, title, items: [{ utteranceId, speakerLabel, text, offsetMs }] }] }
+// source AUTO(기본): 녹음 후처리가 끝났으면 POSTPROCESS(화자 N), 아니면 REALTIME
+// 발화가 없는 안건은 빠진다
+export const getTranscripts = async (meetingId) => {
+  const response = await api.get(`/meetings/${meetingId}/transcripts`, {
+    meetingId,
+  });
+  return response.data.data;
+};
