@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { getMeetingSession } from '@/utils/meetingSession';
 
 const WS_URL = import.meta.env.VITE_WS_URL;
@@ -12,6 +12,7 @@ const send = (socket, type, data) => {
   socket.send(JSON.stringify(data === undefined ? { type } : { type, data }));
 };
 
+// 반환: { send(type, data) } 서버로 메시지 전송 (끊겨 있으면 버림)
 export const useMeetingSocket = ({
   meetingId,
   enabled,
@@ -24,6 +25,9 @@ export const useMeetingSocket = ({
   useEffect(() => {
     handlersRef.current = { onEvent, onOpen, onClose };
   });
+
+  // 지금 열린 소켓 (send에서 씀)
+  const socketRef = useRef(null);
 
   useEffect(() => {
     if (!enabled) return undefined;
@@ -44,6 +48,7 @@ export const useMeetingSocket = ({
       socket = new WebSocket(
         `${WS_URL}/ws/meetings/${meetingId}?token=${encodeURIComponent(token)}`,
       );
+      socketRef.current = socket;
 
       socket.onopen = () => {
         const isReconnect = attempt > 0;
@@ -84,6 +89,14 @@ export const useMeetingSocket = ({
       clearInterval(pingId);
       clearTimeout(retryId);
       socket?.close(1000);
+      socketRef.current = null;
     };
   }, [meetingId, enabled]);
+
+  const sendMessage = useCallback(
+    (type, data) => send(socketRef.current, type, data),
+    [],
+  );
+
+  return { send: sendMessage };
 };

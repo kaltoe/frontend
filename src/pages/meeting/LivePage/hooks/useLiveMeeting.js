@@ -462,8 +462,23 @@ export const useLiveMeeting = (meetingId) => {
   });
 
   // 연결되면 API-04로 상태를 맞춤
+  // 내 마이크 상태 (소켓 콜백에서 최신 값을 보기 위해 ref로 둠)
+  const micStateRef = useRef(null);
+  useEffect(() => {
+    micStateRef.current = meeting?.me.micState ?? null;
+  });
+
+  // 소켓 보내기
+  const sendSocketRef = useRef(() => {});
+
   const handleSocketOpen = useCallback(
     async ({ isReconnect }) => {
+      // 서버는 처음 들어온 참가자를 ON으로, 다시 연결하면 끊기기 전 상태로 기억함
+      // → 연결될 때마다 지금 내 마이크 상태를 한 번 보냄 (WS-01 mic.status)
+      if (micStateRef.current) {
+        sendSocketRef.current('mic.status', { state: micStateRef.current });
+      }
+
       if (!isReconnect && !isWaitingRef.current) return;
       await syncMeeting();
       setConnection('connected');
@@ -491,7 +506,7 @@ export const useLiveMeeting = (meetingId) => {
     [meetingId, navigate],
   );
 
-  useMeetingSocket({
+  const { send: sendSocket } = useMeetingSocket({
     meetingId,
     enabled: !USE_MOCK && meeting !== null,
     onEvent: handleSocketEvent,
@@ -514,11 +529,28 @@ export const useLiveMeeting = (meetingId) => {
     });
   }, []);
 
-  // TODO: 반환하는 stream을 음성 송출(WS-02)에 연결
-  useMicrophone({
+  // TODO: stream을 음성 송출(WS-02)에 연결
+  const { stream: micStream } = useMicrophone({
     enabled: !USE_MOCK && meeting !== null,
     onPermissionChange: handleMicPermission,
   });
+
+  // 마이크 끄기·켜기: 끄면 트랙을 멈춰서(enabled=false) 무음이 나감
+  const micState = meeting?.me.micState;
+  useEffect(() => {
+    micStream?.getAudioTracks().forEach((track) => {
+      track.enabled = micState === 'ON';
+    });
+  }, [micStream, micState]);
+
+  // 내 마이크 상태가 바뀌면 서버에 알림 (버튼, 권한 결과, 마이크 끊김)
+  useEffect(() => {
+    sendSocketRef.current = sendSocket;
+  });
+  useEffect(() => {
+    if (USE_MOCK || !micState) return;
+    sendSocket('mic.status', { state: micState });
+  }, [micState, sendSocket]);
 
   // 회의 종료 요청 중 (진행자 버튼 모두 막음)
   const [isEnding, setIsEnding] = useState(false);
