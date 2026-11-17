@@ -11,7 +11,9 @@ import {
 } from '@/api/meeting';
 import { clearMeetingSession, getMeetingSession } from '@/utils/meetingSession';
 import { mockMeeting } from '../mockMeeting';
+import { useAudioStream } from './useAudioStream';
 import { useMeetingSocket } from './useMeetingSocket';
+import { useMicrophone } from './useMicrophone';
 
 const USE_MOCK =
   import.meta.env.DEV && import.meta.env.VITE_USE_MOCK === 'true';
@@ -248,7 +250,11 @@ export const useLiveMeeting = (meetingId) => {
         navigate(`/result/${meetingId}`, { replace: true });
         return;
       }
-      setMeeting(toLiveMeeting(data, getMeetingSession(meetingId)));
+      setMeeting((prev) => {
+        const next = toLiveMeeting(data, getMeetingSession(meetingId));
+        if (!prev) return next;
+        return { ...next, me: { ...next.me, micState: prev.me.micState } };
+      });
     } catch (error) {
       if (error.response?.status === 401) {
         navigate(`/m/${meetingId}`, { replace: true });
@@ -457,8 +463,23 @@ export const useLiveMeeting = (meetingId) => {
   });
 
   // 연결되면 API-04로 상태를 맞춤
+  // 내 마이크 상태 (소켓 콜백에서 최신 값을 보기 위해 ref로 둠)
+  const micStateRef = useRef(null);
+  useEffect(() => {
+    micStateRef.current = meeting?.me.micState ?? null;
+  });
+
+  // 소켓 보내기
+  const sendSocketRef = useRef(() => {});
+
   const handleSocketOpen = useCallback(
     async ({ isReconnect }) => {
+      // 서버는 처음 들어온 참가자를 ON으로, 다시 연결하면 끊기기 전 상태로 기억함
+      // → 연결될 때마다 지금 내 마이크 상태를 한 번 보냄 (WS-01 mic.status)
+      if (micStateRef.current) {
+        sendSocketRef.current('mic.status', { state: micStateRef.current });
+      }
+
       if (!isReconnect && !isWaitingRef.current) return;
       await syncMeeting();
       setConnection('connected');
@@ -486,12 +507,77 @@ export const useLiveMeeting = (meetingId) => {
     [meetingId, navigate],
   );
 
-  useMeetingSocket({
+  const { send: sendSocket } = useMeetingSocket({
     meetingId,
     enabled: !USE_MOCK && meeting !== null,
     onEvent: handleSocketEvent,
     onOpen: handleSocketOpen,
     onClose: handleSocketClose,
+  });
+
+  // 마이크 권한 (대기 화면에서 요청)
+  // - 거부: 내 마이크 상태를 DENIED로 (진행자면 자동 일시 정지, 권한 토스트)
+  // - 허용: 권한이 없던 상태였으면 ON으로.
+  const handleMicPermission = useCallback((permission) => {
+    setMeeting((prev) => {
+      if (!prev) return prev;
+      const { micState } = prev.me;
+      let nextMicState = micState;
+      if (permission === 'denied') nextMicState = 'DENIED';
+      else if (micState === 'DENIED') nextMicState = 'ON';
+      if (nextMicState === micState) return prev;
+      return { ...prev, me: { ...prev.me, micState: nextMicState } };
+    });
+  }, []);
+
+  const { stream: micStream } = useMicrophone({
+    enabled: !USE_MOCK && meeting !== null,
+    onPermissionChange: handleMicPermission,
+  });
+
+  // 마이크 끄기·켜기: 끄면 트랙을 멈춰서(enabled=false) 무음이 나감
+  const micState = meeting?.me.micState;
+  useEffect(() => {
+    micStream?.getAudioTracks().forEach((track) => {
+      track.enabled = micState === 'ON';
+    });
+  }, [micStream, micState]);
+
+  // 내 마이크 상태가 바뀌면 서버에 알림 (버튼, 권한 결과, 마이크 끊김)
+  useEffect(() => {
+    sendSocketRef.current = sendSocket;
+  });
+  useEffect(() => {
+    if (USE_MOCK || !micState) return;
+    sendSocket('mic.status', { state: micState });
+  }, [micState, sendSocket]);
+
+  // 음성 송출 (WS-02): 회의가 시작된 뒤부터 연결
+  // 대기 중에는 연결하지 않음
+  const isStarted =
+    meeting?.status === 'IN_PROGRESS' || meeting?.status === 'PAUSED';
+  // 지금 녹음 위치 = 회의 경과 시간(일시 정지 제외, 헤더 녹음 시간과 같음)
+  // 끊긴 동안 모은 소리의 위치를 정할 때 씀
+  const timerRef = useRef(null);
+  useEffect(() => {
+    timerRef.current = meeting?.timer ?? null;
+  });
+  const getRecordingPosition = useCallback(() => {
+    const timer = timerRef.current;
+    if (!timer) return null;
+    const isRecording = timer.status === 'IN_PROGRESS';
+    const passedMs = isRecording ? Date.now() - timer.receivedAt : 0;
+    return {
+      offsetMs: timer.totalElapsedSeconds * 1000 + passedMs,
+      isRecording,
+    };
+  }, []);
+
+  useAudioStream({
+    meetingId,
+    enabled: !USE_MOCK && isStarted,
+    stream: micStream,
+    getRecordingPosition,
   });
 
   // 회의 종료 요청 중 (진행자 버튼 모두 막음)
@@ -518,7 +604,8 @@ export const useLiveMeeting = (meetingId) => {
     }
   }, [meetingId, navigate, handleControlError]);
 
-  // TODO: 실제 마이크 켜고 끄기 + WS-01 mic.status 전송
+  // 마이크 버튼: 내 마이크 상태만 ON ↔ OFF로 바꿈
+  // 실제 마이크 트랙 끄기·켜기와 WS-01 mic.status 전송은 micState가 바뀌면 위 effect가 처리
   const toggleMic = useCallback(() => {
     setMeeting((prev) => ({
       ...prev,
