@@ -50,14 +50,16 @@ export const ResultPage = ({ readOnly = false }) => {
     <ResultLoader
       key={readOnly ? `share-${shareId}` : meetingId}
       meetingId={meetingId}
+      shareId={shareId}
       readOnly={readOnly}
     />
   );
 };
 
-const ResultLoader = ({ meetingId, readOnly }) => {
-  // API-10 회의 결과 (401 → 만료 링크 화면, 409 → 라이브 화면으로 이동)
-  const result = useMeetingResult(meetingId, readOnly);
+const ResultLoader = ({ meetingId, shareId, readOnly }) => {
+  // 결과 화면: API-10 회의 결과 (401 → 만료 링크 화면, 409 → 라이브 화면으로 이동)
+  // 공유 화면: API-16 공유 회의록 (404·410 → 만료 링크 화면으로 이동)
+  const result = useMeetingResult({ meetingId, shareId, readOnly });
 
   if (!result.meeting) {
     return (
@@ -84,6 +86,7 @@ const ResultLoader = ({ meetingId, readOnly }) => {
   return (
     <ResultContent
       meetingId={meetingId}
+      shareId={shareId}
       meeting={result.meeting}
       readOnly={readOnly}
       isMock={result.isMock}
@@ -91,19 +94,25 @@ const ResultLoader = ({ meetingId, readOnly }) => {
   );
 };
 
-const ResultContent = ({ meetingId, meeting, readOnly, isMock }) => {
+const ResultContent = ({ meetingId, shareId, meeting, readOnly, isMock }) => {
+  // 공유 화면은 shareId로 공유 API(API-17, 18)를 부른다.
+  const target = readOnly ? { shareId } : { meetingId };
   // 네트워크가 끊기면 본문 대신 로딩 화면을 보여주고, 다시 연결되면 돌아온다.
   const isOnline = useOnlineStatus();
   const [tab, setTab] = useState(RESULT_TABS[0].value);
 
   // API-11 안건별 3줄 요약 (만드는 중이면 3초마다 다시 확인)
-  const summary = useMeetingSummary(meetingId, meeting.agendas, isMock);
-  // API-14 회의 내용 (안건별 발화)
+  // 공유 화면은 API-16에 함께 온 요약을 쓴다.
+  const summary = useMeetingSummary(meetingId, meeting.agendas, {
+    isMock,
+    shared: meeting.summary,
+  });
+  // API-14(공유 화면은 API-17) 회의 내용 (안건별 발화)
   // 참가자 결과 화면은 종료 후 7일이 지나면 회의 내용 탭을 잠근다. (들어올 때 한 번 판단)
   const [isLockPassed] = useState(
     () => !readOnly && isScriptLockPassed(meeting.endedAt, Date.now()),
   );
-  const transcripts = useMeetingTranscripts(meetingId, meeting.agendas, {
+  const transcripts = useMeetingTranscripts(target, meeting.agendas, {
     isMock,
     isLocked: isLockPassed,
   });
@@ -112,15 +121,17 @@ const ResultContent = ({ meetingId, meeting, readOnly, isMock }) => {
   const [scriptHighlight, setScriptHighlight] = useState(null);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
-  // API-13 녹음 (합치는 중이면 3초마다 다시 확인)
-  const recording = useMeetingRecording(meetingId, {
+  // API-13(공유 화면은 API-18) 녹음 (합치는 중이면 3초마다 다시 확인)
+  const recording = useMeetingRecording(target, {
     isMock,
     isLocked: isLockPassed,
   });
   // 종료 후 7일이 지났거나, 서버가 녹음·회의 내용을 410으로 막으면 회의 내용 탭을 결제 잠금 창으로 가린다.
+  // 공유 화면은 잠그지 않고, 녹음 보관 기간이 지나면 플레이어만 숨긴다.
+  const isRecordingExpired = recording.status === RECORDING_STATUS.EXPIRED;
   const isScriptLocked =
     transcripts.status === TRANSCRIPTS_STATUS.LOCKED ||
-    recording.status === RECORDING_STATUS.EXPIRED;
+    (!readOnly && isRecordingExpired);
   const player = useAudioPlayer({
     fallbackDuration: recording.durationSeconds,
     onSourceError: recording.refreshUrl,
@@ -166,9 +177,9 @@ const ResultContent = ({ meetingId, meeting, readOnly, isMock }) => {
   );
 
   // 녹음이 준비되기 전이나 만들지 못했으면 플레이어 자리에 안내 문구를 보여준다.
-  // 잠겼으면 플레이어를 숨긴다.
+  // 잠겼거나 녹음 보관 기간이 지났으면 플레이어를 숨긴다.
   const getAudioPlayer = () => {
-    if (isScriptLocked) return null;
+    if (isScriptLocked || isRecordingExpired) return null;
 
     if (recording.status !== RECORDING_STATUS.READY) {
       return (
@@ -228,7 +239,7 @@ const ResultContent = ({ meetingId, meeting, readOnly, isMock }) => {
                 meeting={meeting}
                 agendas={summary.agendas}
                 status={summary.status}
-                onRetry={summary.retry}
+                onRetry={readOnly ? undefined : summary.retry}
                 onCopy={handleCopySummary}
               />
             )}

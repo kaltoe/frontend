@@ -78,6 +78,14 @@
   cursor: pointer;
 }
 
+// 공유 화면에서 요약을 만들지 못했을 때
+.failedText {
+  font-size: $font-size-14;
+  line-height: 1.22;
+  letter-spacing: -0.03em;
+  color: $color-gray-500;
+}
+
 @keyframes spin {
   to {
     transform: rotate(360deg);
