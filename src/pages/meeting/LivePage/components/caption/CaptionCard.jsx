@@ -1,5 +1,5 @@
 import { meetingIconCaption, meetingIconChevron } from '@/assets';
-import { getEmptyCaptionText } from '../../utils/captionStatus';
+import { EMPTY_CAPTION_TEXT } from '../../utils/captionStatus';
 import { CaptionBadge, CaptionLine } from './Caption';
 import styles from './CaptionCard.module.scss';
 
@@ -42,7 +42,7 @@ export const CaptionCard = ({
           <CaptionLine transcript={latest} />
         </ul>
       ) : (
-        <p className={styles.empty}>{getEmptyCaptionText(status)}</p>
+        <p className={styles.empty}>{EMPTY_CAPTION_TEXT}</p>
       )}
     </section>
   );

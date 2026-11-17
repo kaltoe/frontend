@@ -135,7 +135,7 @@ export const InviteModal = ({
 
                 <p className={styles.expiry}>
                   <img src={meetingIconTime} alt="" width={14} height={14} />
-                  코드와 링크는 2주 후 만료돼요.
+                  코드와 링크는 7일 후 만료돼요.
                 </p>
               </div>
 

@@ -10,8 +10,5 @@ export const getCaptionStatus = ({ micState, sttStatus }) => {
   return 'ok';
 };
 
-// 자막이 하나도 없을 때 문구
-export const getEmptyCaptionText = (status) =>
-  status === 'noAudio'
-    ? '등록된 자막이 없어요.'
-    : '발언을 시작하면 실시간으로 기록됩니다...';
+// 자막이 하나도 없을 때 문구 (자막 상태와 상관없이 같음)
+export const EMPTY_CAPTION_TEXT = '등록된 자막이 없어요.';
