@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getMeetingResult } from '@/api/meeting';
+import { goToNoResultAccess } from '@/pages/after/ExpiredLinkPage/expiredLinkReason';
 import { mockResult } from './mockResult';
 import { toResultMeeting } from './toResultMeeting';
 
@@ -34,9 +35,8 @@ export const useMeetingResult = (meetingId, readOnly) => {
         if (ignore) return;
         const status = error.response?.status;
         // 이 기기에 토큰이 없거나 만료됨. 끝난 회의는 다시 Sign In할 수 없음
-        // TODO: 401 화면이 정해지면 교체 (기획 문의 중)
         if (status === 401) {
-          navigate('/invalid-link', { replace: true });
+          goToNoResultAccess(navigate);
           return;
         }
         // 아직 끝나지 않은 회의 → 라이브 화면이 대기·진행 상태를 보여줌

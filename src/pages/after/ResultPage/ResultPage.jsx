@@ -18,10 +18,16 @@ import { RESULT_TABS } from './constants';
 import { formatDate } from './formatResult';
 import { getSummaryText } from './getSummaryText';
 import { getTimeResult } from './getTimeResult';
+import { isScriptLockPassed } from './scriptLock';
 import styles from './ResultPage.module.scss';
 import { useAudioPlayer } from './useAudioPlayer';
+import { RECORDING_STATUS, useMeetingRecording } from './useMeetingRecording';
 import { useMeetingResult } from './useMeetingResult';
 import { useMeetingSummary } from './useMeetingSummary';
+import {
+  TRANSCRIPTS_STATUS,
+  useMeetingTranscripts,
+} from './useMeetingTranscripts';
 
 // readOnly: 공유 링크로 들어온 화면. 공유 버튼 없이 볼 수 있는 기한을 알려준다.
 export const ResultPage = ({ readOnly = false }) => {
@@ -79,12 +85,33 @@ const ResultContent = ({ meetingId, meeting, readOnly, isMock }) => {
 
   // API-11 안건별 3줄 요약 (만드는 중이면 3초마다 다시 확인)
   const summary = useMeetingSummary(meetingId, meeting.agendas, isMock);
+  // API-14 회의 내용 (안건별 발화)
+  // 참가자 결과 화면은 종료 후 7일이 지나면 회의 내용 탭을 잠근다. (들어올 때 한 번 판단)
+  const [isLockPassed] = useState(
+    () => !readOnly && isScriptLockPassed(meeting.endedAt, Date.now()),
+  );
+  const transcripts = useMeetingTranscripts(meetingId, meeting.agendas, {
+    isMock,
+    isLocked: isLockPassed,
+  });
   // 다시 복사하면 토스트를 새로 띄워 닫히는 시간을 처음부터 센다.
   const [copyToastKey, setCopyToastKey] = useState(null);
   const [scriptHighlight, setScriptHighlight] = useState(null);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
-  const player = useAudioPlayer(meeting.recordingSeconds);
+  // API-13 녹음 (합치는 중이면 3초마다 다시 확인)
+  const recording = useMeetingRecording(meetingId, {
+    isMock,
+    isLocked: isLockPassed,
+  });
+  // 종료 후 7일이 지났거나, 서버가 녹음·회의 내용을 410으로 막으면 회의 내용 탭을 결제 잠금 창으로 가린다.
+  const isScriptLocked =
+    transcripts.status === TRANSCRIPTS_STATUS.LOCKED ||
+    recording.status === RECORDING_STATUS.EXPIRED;
+  const player = useAudioPlayer({
+    fallbackDuration: recording.durationSeconds,
+    onSourceError: recording.refreshUrl,
+  });
 
   const timeResult = getTimeResult(meeting);
 
@@ -120,15 +147,32 @@ const ResultContent = ({ meetingId, meeting, readOnly, isMock }) => {
     </p>
   );
 
-  const audioPlayer = (
-    <AudioPlayer
-      currentTime={player.currentTime}
-      duration={player.duration}
-      isPlaying={player.isPlaying}
-      onTogglePlay={player.togglePlay}
-      onSeek={player.seek}
-    />
-  );
+  // 녹음이 준비되기 전이나 만들지 못했으면 플레이어 자리에 안내 문구를 보여준다.
+  // 잠겼으면 플레이어를 숨긴다.
+  const getAudioPlayer = () => {
+    if (isScriptLocked) return null;
+
+    if (recording.status !== RECORDING_STATUS.READY) {
+      return (
+        <p className={styles.playerNotice} role="status">
+          {recording.status === RECORDING_STATUS.FAILED
+            ? '회의록을 만들지 못했어요.'
+            : '회의록을 정리하고 있어요.'}
+        </p>
+      );
+    }
+
+    return (
+      <AudioPlayer
+        currentTime={player.currentTime}
+        duration={player.duration}
+        isPlaying={player.isPlaying}
+        onTogglePlay={player.togglePlay}
+        onSeek={player.seek}
+      />
+    );
+  };
+  const audioPlayer = getAudioPlayer();
 
   const copyToast = copyToastKey && (
     <Toast
@@ -144,7 +188,7 @@ const ResultContent = ({ meetingId, meeting, readOnly, isMock }) => {
       <Header>
         {readOnly && <span className={styles.readOnlyBadge}>읽기 전용</span>}
       </Header>
-      <audio {...player.audioProps} src={meeting.audioUrl ?? undefined} />
+      <audio {...player.audioProps} src={recording.url ?? undefined} />
 
       {!isOnline ? (
         <LoadingView />
@@ -173,8 +217,9 @@ const ResultContent = ({ meetingId, meeting, readOnly, isMock }) => {
             {tab === 'script' && (
               <ScriptTab
                 meeting={meeting}
+                transcripts={transcripts}
                 highlight={scriptHighlight}
-                isLocked={meeting.isScriptLocked}
+                isLocked={isScriptLocked}
                 onSelect={handleSelectScript}
               />
             )}

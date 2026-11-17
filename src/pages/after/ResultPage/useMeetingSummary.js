@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getSummary, retrySummary } from '@/api/meeting';
+import { goToNoResultAccess } from '@/pages/after/ExpiredLinkPage/expiredLinkReason';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { SUMMARY_STATUS } from './constants';
 import { mockResult } from './mockResult';
@@ -62,9 +63,8 @@ export const useMeetingSummary = (meetingId, agendas, isMock) => {
       } catch (error) {
         if (ignore) return;
         // 결과 화면(API-10)과 같이 토큰이 없거나 만료되면 만료 링크 화면으로
-        // TODO: 401 화면이 정해지면 교체 (기획 문의 중)
         if (error.response?.status === 401) {
-          navigate('/invalid-link', { replace: true });
+          goToNoResultAccess(navigate);
           return;
         }
         // 네트워크·서버 오류는 잠시 뒤 다시 부른다.
@@ -91,7 +91,7 @@ export const useMeetingSummary = (meetingId, agendas, isMock) => {
     } catch (error) {
       const code = error.response?.status;
       if (code === 401) {
-        navigate('/invalid-link', { replace: true });
+        goToNoResultAccess(navigate);
       } else if (code === 409) {
         // 이미 다시 만드는 중이거나 FAILED가 아님 → API-11로 지금 상태를 다시 확인
         setStatus(null);

@@ -56,3 +56,13 @@
   color: $color-gray-500;
   cursor: pointer;
 }
+
+// 녹음 플레이어 자리의 안내 문구 (녹음 준비 중·실패)
+.playerNotice {
+  @include flex;
+  height: 40px;
+  font-size: $font-size-14;
+  line-height: 1.22;
+  letter-spacing: -0.03em;
+  color: $color-gray-500;
+}

@@ -83,3 +83,28 @@
   box-decoration-break: clone;
   -webkit-box-decoration-break: clone;
 }
+
+// 기록이 없거나 불러오지 못했을 때
+.status {
+  @include flex(column, center, center);
+  flex: 1;
+  padding: 40px 0;
+}
+
+.empty {
+  font-size: $font-size-14;
+  line-height: 1.22;
+  letter-spacing: -0.03em;
+  color: $color-gray-500;
+}
+
+.retryButton {
+  @include flex(column, center, flex-start, 8px);
+  border: none;
+  background: transparent;
+  font-size: $font-size-14;
+  line-height: 1.22;
+  letter-spacing: -0.03em;
+  color: $color-gray-500;
+  cursor: pointer;
+}
