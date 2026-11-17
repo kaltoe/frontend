@@ -10,8 +10,11 @@ export const getTimerState = (remainingSeconds) => {
   return 'normal';
 };
 
-// 끝난 안건이 배정 시간을 넘겼는지
-// actualSeconds: API-04 agendas[].actualSeconds, API-07·agenda.changed previousAgenda.actualSeconds
+// 끝난 안건 판정의 허용 범위 (API-07 outcome: ±60초 안이면 ON_TIME)
+export const OVERTIME_TOLERANCE_SECONDS = 60;
+
+// diffSeconds = actualSeconds − allocatedSeconds 가 +60초 넘으면 초과
+// API-04 안건에는 outcome이 없어서 같은 계산을 화면에서 함
 export const isOvertimeAgenda = (agenda) =>
   agenda.actualSeconds !== null &&
-  agenda.actualSeconds > agenda.allocatedSeconds;
+  agenda.actualSeconds - agenda.allocatedSeconds > OVERTIME_TOLERANCE_SECONDS;
