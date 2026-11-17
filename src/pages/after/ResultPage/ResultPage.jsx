@@ -252,14 +252,20 @@ const ResultContent = ({ meetingId, shareId, meeting, readOnly, isMock }) => {
                 onSelect={handleSelectScript}
               />
             )}
-            {tab === 'script' && expiryNotice}
           </main>
 
           {readOnly ? (
             <>
               {tab !== 'script' && expiryNotice}
+              {/* 회의 내용 탭은 만료 안내를 플레이어 바로 위에 고정한다. */}
               {tab === 'script' && (
-                <BottomBar header={audioPlayer} floating={copyToast} />
+                <div className={styles.scriptBottom}>
+                  {copyToast && (
+                    <div className={styles.scriptToast}>{copyToast}</div>
+                  )}
+                  {expiryNotice}
+                  <BottomBar header={audioPlayer} />
+                </div>
               )}
               {tab !== 'script' && copyToast && (
                 <div className={styles.floatingToast}>{copyToast}</div>
