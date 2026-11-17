@@ -20,6 +20,7 @@ import { getSummaryText } from './getSummaryText';
 import { getTimeResult } from './getTimeResult';
 import styles from './ResultPage.module.scss';
 import { useAudioPlayer } from './useAudioPlayer';
+import { RECORDING_STATUS, useMeetingRecording } from './useMeetingRecording';
 import { useMeetingResult } from './useMeetingResult';
 import { useMeetingSummary } from './useMeetingSummary';
 import { useMeetingTranscripts } from './useMeetingTranscripts';
@@ -87,7 +88,12 @@ const ResultContent = ({ meetingId, meeting, readOnly, isMock }) => {
   const [scriptHighlight, setScriptHighlight] = useState(null);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
-  const player = useAudioPlayer(meeting.recordingSeconds);
+  // API-13 녹음 (합치는 중이면 3초마다 다시 확인)
+  const recording = useMeetingRecording(meetingId, isMock);
+  const player = useAudioPlayer({
+    fallbackDuration: recording.durationSeconds,
+    onSourceError: recording.refreshUrl,
+  });
 
   const timeResult = getTimeResult(meeting);
 
@@ -123,15 +129,23 @@ const ResultContent = ({ meetingId, meeting, readOnly, isMock }) => {
     </p>
   );
 
-  const audioPlayer = (
-    <AudioPlayer
-      currentTime={player.currentTime}
-      duration={player.duration}
-      isPlaying={player.isPlaying}
-      onTogglePlay={player.togglePlay}
-      onSeek={player.seek}
-    />
-  );
+  // 녹음이 준비되기 전이나 만들지 못했으면 플레이어 자리에 안내 문구를 보여준다.
+  const audioPlayer =
+    recording.status === RECORDING_STATUS.READY ? (
+      <AudioPlayer
+        currentTime={player.currentTime}
+        duration={player.duration}
+        isPlaying={player.isPlaying}
+        onTogglePlay={player.togglePlay}
+        onSeek={player.seek}
+      />
+    ) : (
+      <p className={styles.playerNotice} role="status">
+        {recording.status === RECORDING_STATUS.FAILED
+          ? '회의록을 만들지 못했어요.'
+          : '회의록을 정리하고 있어요.'}
+      </p>
+    );
 
   const copyToast = copyToastKey && (
     <Toast
@@ -147,7 +161,7 @@ const ResultContent = ({ meetingId, meeting, readOnly, isMock }) => {
       <Header>
         {readOnly && <span className={styles.readOnlyBadge}>읽기 전용</span>}
       </Header>
-      <audio {...player.audioProps} src={meeting.audioUrl ?? undefined} />
+      <audio {...player.audioProps} src={recording.url ?? undefined} />
 
       {!isOnline ? (
         <LoadingView />
