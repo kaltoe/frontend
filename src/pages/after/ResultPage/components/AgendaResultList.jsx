@@ -19,10 +19,10 @@ export const AgendaResultList = ({ agendas, timeResult }) => {
                   사담 알림{' '}
                   <span
                     className={
-                      agenda.chatterCount > 0 ? styles.chatterCount : ''
+                      agenda.offtopicCount > 0 ? styles.chatterCount : ''
                     }
                   >
-                    {agenda.chatterCount}회
+                    {agenda.offtopicCount}회
                   </span>
                 </p>
               </div>

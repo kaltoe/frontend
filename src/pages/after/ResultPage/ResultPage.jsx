@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react';
-import { copyCheck, linkWhite } from '@/assets';
+import { useParams } from 'react-router-dom';
+import { copyCheck, linkWhite, retry } from '@/assets';
 import { BottomBar } from '@/components/common/BottomBar/BottomBar';
 import { ConfirmModal } from '@/components/common/ConfirmModal/ConfirmModal';
 import { Header } from '@/components/common/Header/Header';
@@ -17,14 +18,53 @@ import { RESULT_TABS, SUMMARY_STATUS } from './constants';
 import { formatDate } from './formatResult';
 import { getSummaryText } from './getSummaryText';
 import { getTimeResult } from './getTimeResult';
-import { mockResult } from './mockResult';
 import styles from './ResultPage.module.scss';
 import { useAudioPlayer } from './useAudioPlayer';
+import { useMeetingResult } from './useMeetingResult';
 
 // readOnly: 공유 링크로 들어온 화면. 공유 버튼 없이 볼 수 있는 기한을 알려준다.
 export const ResultPage = ({ readOnly = false }) => {
-  // TODO: 회의 결과 API 연동 후 URL의 회의 ID·공유 코드로 받아온 값으로 교체
-  const meeting = mockResult;
+  const { meetingId, shareCode } = useParams();
+  // 다른 회의·공유 화면으로 옮기면 이전 회의의 값과 탭·재생 상태를 버리고 새로 시작한다.
+  return (
+    <ResultLoader
+      key={readOnly ? `share-${shareCode}` : meetingId}
+      meetingId={meetingId}
+      readOnly={readOnly}
+    />
+  );
+};
+
+const ResultLoader = ({ meetingId, readOnly }) => {
+  // API-10 회의 결과 (401 → 만료 링크 화면, 409 → 라이브 화면으로 이동)
+  const result = useMeetingResult(meetingId, readOnly);
+
+  if (!result.meeting) {
+    return (
+      <div className={styles.page}>
+        <Header />
+        {result.hasError ? (
+          <div className={styles.loadError}>
+            <button
+              className={styles.retryButton}
+              type="button"
+              onClick={result.retry}
+            >
+              <img src={retry} alt="" />
+              결과를 불러오지 못했어요. 다시 시도해주세요.
+            </button>
+          </div>
+        ) : (
+          <LoadingView />
+        )}
+      </div>
+    );
+  }
+
+  return <ResultContent meeting={result.meeting} readOnly={readOnly} />;
+};
+
+const ResultContent = ({ meeting, readOnly }) => {
   // 네트워크가 끊기면 본문 대신 로딩 화면을 보여주고, 다시 연결되면 돌아온다.
   const isOnline = useOnlineStatus();
   const [tab, setTab] = useState(RESULT_TABS[0].value);
@@ -37,7 +77,7 @@ export const ResultPage = ({ readOnly = false }) => {
 
   const player = useAudioPlayer(meeting.recordingSeconds);
 
-  const timeResult = getTimeResult(meeting.agendas);
+  const timeResult = getTimeResult(meeting);
 
   const closeCopyToast = useCallback(() => setCopyToastKey(null), []);
 
