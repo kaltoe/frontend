@@ -6,6 +6,7 @@ import {
   nextAgenda,
   pauseMeeting,
   resumeMeeting,
+  startMeeting,
 } from '@/api/meeting';
 import { getMeetingSession } from '@/utils/meetingSession';
 import { mockMeeting } from '../mockMeeting';
@@ -74,6 +75,19 @@ const applyServerTimer = (prev, serverTimer) => ({
   status: serverTimer.status,
   timer: { ...serverTimer, receivedAt: Date.now() },
 });
+
+// 회의 시작 반영 (API-19 응답, 이후 WS-01 meeting.started도 같은 모양)
+const applyStart = (prev, timer) => ({
+  ...applyServerTimer(prev, timer),
+  agendas: prev.agendas.map((agenda) =>
+    agenda.agendaId === timer.currentAgendaId
+      ? { ...agenda, status: 'IN_PROGRESS' }
+      : agenda,
+  ),
+});
+
+// 대기 중 참여자가 회의 상태를 다시 확인하는 간격 (WS-01 meeting.started 연동 전 임시)
+const WAITING_POLL_MS = 3000;
 
 // 안건 전환 결과 반영 (API-07 응답, WS-01 agenda.changed도 같은 모양)
 const applyAgendaChange = (prev, { previousAgenda, currentAgenda, timer }) => ({
@@ -173,20 +187,6 @@ export const useLiveMeeting = (meetingId) => {
     };
   }, [meetingId, navigate]);
 
-  // 진행자 [회의 시작]
-  // TODO: API-19 POST /meetings/{meetingId}/start → 응답 data.timer 적용
-  //       409(이미 시작)면 에러 없이 API-04로 다시 불러와 화면만 맞춤
-  //       참여자는 WS-01 meeting.started를 받아 같은 처리
-  const start = useCallback(() => {
-    setMeeting((prev) => {
-      const [firstAgenda, ...restAgendas] = prev.agendas;
-      return {
-        ...replaceTimer(prev, prev.timer, 'IN_PROGRESS'),
-        agendas: [{ ...firstAgenda, status: 'IN_PROGRESS' }, ...restAgendas],
-      };
-    });
-  }, []);
-
   const syncMeeting = useCallback(async () => {
     try {
       const data = await getMeetingState(meetingId);
@@ -281,6 +281,45 @@ export const useLiveMeeting = (meetingId) => {
     [meetingId, handleControlError],
   );
 
+  // 회의 시작 요청 중 ([회의 시작하기] 버튼을 막음)
+  const [isStarting, setIsStarting] = useState(false);
+
+  // 진행자 [회의 시작하기] (API-19)
+  // 성공하면 응답 timer로 타이머를 시작. 실패하면 알림 없이 서버 상태에 맞춤
+  // (409: 다른 기기에서 먼저 시작 → API-04로 다시 불러와 라이브 화면으로)
+  const start = useCallback(async () => {
+    if (isControlRequestingRef.current) return;
+    if (USE_MOCK) {
+      setMeeting((prev) =>
+        applyStart(prev, { ...prev.timer, status: 'IN_PROGRESS' }),
+      );
+      return;
+    }
+
+    isControlRequestingRef.current = true;
+    setIsStarting(true);
+    try {
+      const data = await startMeeting(meetingId);
+      setMeeting((prev) => applyStart(prev, data.timer));
+    } catch (error) {
+      await handleControlError(error);
+    } finally {
+      isControlRequestingRef.current = false;
+      setIsStarting(false);
+    }
+  }, [meetingId, handleControlError]);
+
+  // 대기 중인 참여자: 진행자가 시작했는지 3초마다 확인 (API-04)
+  // 시작되면 받은 상태로 라이브 화면이 됨
+  // TODO: WS-01 meeting.started를 받으면 이 확인은 지움
+  const isWaitingMember =
+    meeting?.status === 'WAITING' && meeting.me.role !== 'HOST';
+  useEffect(() => {
+    if (USE_MOCK || !isWaitingMember) return undefined;
+    const id = setInterval(syncMeeting, WAITING_POLL_MS);
+    return () => clearInterval(id);
+  }, [isWaitingMember, syncMeeting]);
+
   // 회의 종료 요청 중 (진행자 버튼 모두 막음)
   const [isEnding, setIsEnding] = useState(false);
 
@@ -326,10 +365,11 @@ export const useLiveMeeting = (meetingId) => {
   return {
     connection,
     meeting,
-    start,
     pause,
     resume,
     goToNextAgenda,
+    start,
+    isStarting,
     end,
     isEnding,
     toggleMic,
