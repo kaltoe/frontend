@@ -28,6 +28,18 @@
   &.warning {
     background-color: $color-warning-bg;
   }
+
+  &.fit {
+    width: fit-content;
+
+    .content {
+      min-width: rem(165px);
+    }
+
+    .message {
+      white-space: nowrap;
+    }
+  }
 }
 
 .content {

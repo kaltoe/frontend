@@ -1,6 +1,10 @@
 import { useCallback, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { meetingIconChatWarning, meetingIconMicOffSmall } from '@/assets';
+import {
+  meetingIconChatWarning,
+  meetingIconMicOffSmall,
+  meetingIconStop,
+} from '@/assets';
 import { CaptionCard } from './components/caption/CaptionCard';
 import { CaptionSheet } from './components/caption/CaptionSheet';
 import { Toast } from './components/common/Toast';
@@ -33,6 +37,13 @@ const CAPTION_TOASTS = {
     icon: meetingIconChatWarning,
     message: '마이크를 끄는 동안은 회의가 기록되지 않아요.',
   },
+};
+
+// 일시정지 토스트: 정지되면 모두에게 뜨고, 5초 뒤/X/재개 시 닫힘
+const PAUSE_TOAST = {
+  variant: 'warning',
+  icon: meetingIconStop,
+  message: '일시정지되었습니다.',
 };
 
 // 확인 모달 (#39 안건 전환, #40 회의 종료)
@@ -81,24 +92,37 @@ const LiveMeeting = ({
   );
   const currentAgenda = meeting.agendas[currentIndex];
 
+  const isMicOn = meeting.me.micState === 'ON';
+  const isPaused = timer.status === 'PAUSED';
+
+  // 일시정지 토스트와 자막 토스트는 같은 자리에 뜸 → 나중에 뜬 토스트만 보여줌
+
+  // 정지되는 순간 토스트를 띄우고, 재개되면 닫음 (새로고침해서 이미 정지 상태로 들어오면 안 띄움)
+  const [prevIsPaused, setPrevIsPaused] = useState(isPaused);
+  const [isPauseToastOpen, setIsPauseToastOpen] = useState(false);
+  const [captionToast, setCaptionToast] = useState(null);
+  if (isPaused !== prevIsPaused) {
+    setPrevIsPaused(isPaused);
+    setIsPauseToastOpen(isPaused);
+    if (isPaused) setCaptionToast(null);
+  }
+  const closePauseToast = useCallback(() => setIsPauseToastOpen(false), []);
+
   const captionStatus = getCaptionStatus({
     micState: meeting.me.micState,
     sttStatus: meeting.sttStatus,
   });
   // 자막 상태가 바뀔 때마다 그 상태의 토스트를 새로 띄움
-  // (렌더 중 이전 값과 비교하는 React 권장 방식. effect 안 setState를 피함)
-  const [prevCaptionStatus, setPrevCaptionStatus] = useState(captionStatus);
-  const [captionToast, setCaptionToast] = useState(
-    CAPTION_TOASTS[captionStatus] ? captionStatus : null,
-  );
+  // 처음 들어올 때 이미 토스트가 필요한 상태면 바로 띄움
+  const [prevCaptionStatus, setPrevCaptionStatus] = useState(null);
   if (captionStatus !== prevCaptionStatus) {
     setPrevCaptionStatus(captionStatus);
-    setCaptionToast(CAPTION_TOASTS[captionStatus] ? captionStatus : null);
+    const nextToast = CAPTION_TOASTS[captionStatus] ? captionStatus : null;
+    setCaptionToast(nextToast);
+    if (nextToast) setIsPauseToastOpen(false);
   }
   const closeCaptionToast = useCallback(() => setCaptionToast(null), []);
 
-  const isMicOn = meeting.me.micState === 'ON';
-  const isPaused = timer.status === 'PAUSED';
   // 진행자는 항상, 참여자는 비대면일 때만 마이크를 켜고 끌 수 있음 (#30)
   // 마이크 권한이 없으면 누구도 켤 수 없음
   const canUseMic =
@@ -127,10 +151,6 @@ const LiveMeeting = ({
         onInviteClick={openInvite}
       />
 
-      {/* TODO: '일시 정지 중' 배너 (#27). 디자인 받으면 추가
-          - isPaused일 때 진행자·참여자 모두에게 노출
-          - 일시정지 동안 타이머, STT 음성 수집, AI 사담 감지 중단 */}
-
       <main className={styles.content}>
         <div className={styles.timerArea}>
           <TotalTimer agendas={meeting.agendas} timer={timer} />
@@ -145,6 +165,15 @@ const LiveMeeting = ({
           canOpen={captionStatus !== 'noAudio'}
         />
       </main>
+
+      {isPauseToastOpen && (
+        <Toast
+          className={styles.toast}
+          {...PAUSE_TOAST}
+          fit
+          onClose={closePauseToast}
+        />
+      )}
 
       {captionToast && (
         <Toast
