@@ -1,4 +1,7 @@
-// TODO: 회의 결과 API 연동 후 삭제
+// 아직 연동하지 않은 값의 임시 데이터
+// - 결과 탭 값: API-10 응답 모양. 공유 화면(API-16)을 연동하기 전까지 공유 화면에서 쓴다
+// - summary: API-11, utterances·audioUrl·recordingSeconds: API-13·14, shareCode·shareExpiresAt: API-15·16
+// TODO: 위 API를 모두 연동한 뒤 삭제
 const createUtterances = (agendaId, startSeconds) =>
   [0, 15, 40, 70].map((offset, index) => ({
     id: `${agendaId}-${index}`,
@@ -10,39 +13,61 @@ const createUtterances = (agendaId, startSeconds) =>
 export const mockResult = {
   title: '회의 제목 회의 제목 회의 제목',
   participantCount: 3,
-  startedAt: '2026-11-08T14:00:00',
-  endedAt: '2026-11-08T14:28:00',
+  startedAt: '2026-11-08T14:00:00+09:00',
+  endedAt: '2026-11-08T14:28:00+09:00',
+  time: {
+    plannedTotalSeconds: 1800,
+    actualDurationSeconds: 1680,
+    pausedTotalSeconds: 0,
+    diffSeconds: -120,
+    outcome: 'SAVED',
+  },
+  agendas: [
+    {
+      agendaId: 1,
+      title: '안건 1제목',
+      allocatedSeconds: 600,
+      actualSeconds: 720,
+      diffSeconds: 120,
+      outcome: 'OVERTIME',
+      offtopicCount: 2,
+    },
+    {
+      agendaId: 2,
+      title: '안건 2제목',
+      allocatedSeconds: 600,
+      actualSeconds: 540,
+      diffSeconds: -60,
+      outcome: 'ON_TIME',
+      offtopicCount: 0,
+    },
+    {
+      agendaId: 3,
+      title: '안건 3제목',
+      allocatedSeconds: 600,
+      actualSeconds: 420,
+      diffSeconds: -180,
+      outcome: 'SAVED',
+      offtopicCount: 1,
+    },
+  ],
+
   summaryStatus: 'done',
   audioUrl: null,
   recordingSeconds: 1680,
   isScriptLocked: false,
   shareCode: 'mock-share-code',
-  shareExpiresAt: '2026-11-22T00:00:00',
-  agendas: [
+  shareExpiresAt: '2026-11-15T00:00:00+09:00',
+  agendaDetails: [
     {
-      id: 1,
-      title: '안건 1제목',
-      plannedMinutes: 10,
-      actualSeconds: 720,
-      chatterCount: 2,
       summary: ['요약 내용', '요약 내용', '요약 내용'],
       utterances: createUtterances(1, 12),
     },
     {
-      id: 2,
-      title: '안건 2제목',
-      plannedMinutes: 10,
-      actualSeconds: 540,
-      chatterCount: 0,
       summary: ['요약 내용', '요약 내용', '요약 내용'],
       utterances: createUtterances(2, 720),
     },
     {
-      id: 3,
-      title: '안건 3제목',
-      plannedMinutes: 10,
-      actualSeconds: 420,
-      chatterCount: 1,
       summary: ['요약 내용', '요약 내용', '요약 내용'],
       utterances: createUtterances(3, 1260),
     },

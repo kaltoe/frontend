@@ -40,3 +40,19 @@
   left: 50%;
   transform: translateX(-50%);
 }
+
+.loadError {
+  @include flex(column, center, center);
+  flex: 1;
+}
+
+.retryButton {
+  @include flex(column, center, flex-start, 8px);
+  border: none;
+  background: transparent;
+  font-size: $font-size-14;
+  line-height: 1.22;
+  letter-spacing: -0.03em;
+  color: $color-gray-500;
+  cursor: pointer;
+}
