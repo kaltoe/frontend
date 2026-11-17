@@ -32,3 +32,13 @@ export const getMeetingState = async (meetingId) => {
   });
   return response.data.data;
 };
+
+// API-10 회의 결과 조회
+// 끝낸 안건만 오고, 소요 시간을 계산하지 못하면(UNKNOWN) 시간 값이 모두 null
+// 토큰이 없거나 만료되면 401, 끝나지 않은 회의는 409
+export const getMeetingResult = async (meetingId) => {
+  const response = await api.get(`/meetings/${meetingId}/result`, {
+    meetingId,
+  });
+  return response.data.data;
+};
