@@ -12,6 +12,7 @@ export const Toast = ({
   message,
   onClose,
   duration = DEFAULT_DURATION_MS,
+  fit = false,
   className = '',
 }) => {
   useEffect(() => {
@@ -21,7 +22,7 @@ export const Toast = ({
 
   return (
     <div
-      className={`${styles.toast} ${styles[variant]} ${className}`}
+      className={`${styles.toast} ${styles[variant]} ${fit ? styles.fit : ''} ${className}`}
       role="status"
       aria-live="polite"
     >
