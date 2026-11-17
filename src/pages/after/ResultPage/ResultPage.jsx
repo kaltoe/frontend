@@ -28,14 +28,27 @@ import {
   TRANSCRIPTS_STATUS,
   useMeetingTranscripts,
 } from './useMeetingTranscripts';
+import { SHARE_RESULT, useShareLink } from './useShareLink';
+
+const COPIED_TOAST = { icon: copyCheck, message: '복사되었습니다!' };
+// 공유 링크 발급 결과별 토스트 (문구는 서버 안내 문구와 같다)
+const SHARE_TOASTS = {
+  [SHARE_RESULT.COPIED]: COPIED_TOAST,
+  [SHARE_RESULT.EXPIRED]: {
+    message: '공유 기간(회의 종료 후 7일)이 지났어요.',
+  },
+  [SHARE_RESULT.FAILED]: {
+    message: '링크를 만들지 못했어요. 잠시 후 다시 시도해주세요.',
+  },
+};
 
 // readOnly: 공유 링크로 들어온 화면. 공유 버튼 없이 볼 수 있는 기한을 알려준다.
 export const ResultPage = ({ readOnly = false }) => {
-  const { meetingId, shareCode } = useParams();
+  const { meetingId, shareId } = useParams();
   // 다른 회의·공유 화면으로 옮기면 이전 회의의 값과 탭·재생 상태를 버리고 새로 시작한다.
   return (
     <ResultLoader
-      key={readOnly ? `share-${shareCode}` : meetingId}
+      key={readOnly ? `share-${shareId}` : meetingId}
       meetingId={meetingId}
       readOnly={readOnly}
     />
@@ -94,8 +107,8 @@ const ResultContent = ({ meetingId, meeting, readOnly, isMock }) => {
     isMock,
     isLocked: isLockPassed,
   });
-  // 다시 복사하면 토스트를 새로 띄워 닫히는 시간을 처음부터 센다.
-  const [copyToastKey, setCopyToastKey] = useState(null);
+  // 토스트를 새로 띄울 때마다 key를 바꿔 닫히는 시간을 처음부터 센다.
+  const [toast, setToast] = useState(null);
   const [scriptHighlight, setScriptHighlight] = useState(null);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
@@ -115,14 +128,19 @@ const ResultContent = ({ meetingId, meeting, readOnly, isMock }) => {
 
   const timeResult = getTimeResult(meeting);
 
-  const closeCopyToast = useCallback(() => setCopyToastKey(null), []);
+  // API-15 공유 링크 발급
+  const shareLink = useShareLink(meetingId, isMock);
+
+  const showToast = (content) =>
+    setToast(content ? { ...content, key: Date.now() } : null);
+  const closeToast = useCallback(() => setToast(null), []);
 
   const copyText = async (text) => {
     try {
       await navigator.clipboard.writeText(text);
-      setCopyToastKey(Date.now());
+      showToast(COPIED_TOAST);
     } catch {
-      setCopyToastKey(null);
+      showToast(null);
     }
   };
 
@@ -135,10 +153,10 @@ const ResultContent = ({ meetingId, meeting, readOnly, isMock }) => {
     player.play();
   };
 
-  const handleConfirmShare = () => {
-    // TODO: 공유 링크 생성 API 연동 후 받은 링크로 교체
-    copyText(`${window.location.origin}/share/${meeting.shareCode}`);
+  const handleConfirmShare = async () => {
     setIsShareModalOpen(false);
+    const result = await shareLink();
+    showToast(SHARE_TOASTS[result]);
   };
 
   const expiryNotice = readOnly && (
@@ -174,12 +192,12 @@ const ResultContent = ({ meetingId, meeting, readOnly, isMock }) => {
   };
   const audioPlayer = getAudioPlayer();
 
-  const copyToast = copyToastKey && (
+  const copyToast = toast && (
     <Toast
-      key={copyToastKey}
-      icon={copyCheck}
-      message="복사되었습니다!"
-      onClose={closeCopyToast}
+      key={toast.key}
+      icon={toast.icon}
+      message={toast.message}
+      onClose={closeToast}
     />
   );
 
