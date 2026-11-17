@@ -8,8 +8,9 @@ import {
   resumeMeeting,
   startMeeting,
 } from '@/api/meeting';
-import { getMeetingSession } from '@/utils/meetingSession';
+import { clearMeetingSession, getMeetingSession } from '@/utils/meetingSession';
 import { mockMeeting } from '../mockMeeting';
+import { useMeetingSocket } from './useMeetingSocket';
 
 const USE_MOCK =
   import.meta.env.DEV && import.meta.env.VITE_USE_MOCK === 'true';
@@ -144,7 +145,6 @@ export const useLiveMeeting = (meetingId) => {
   // - 'connected': 회의 화면
   // - 'reconnecting': 끊겨서 다시 연결 중 → 로딩 화면
   // - 'error': 없는 회의, 서버·네트워크 오류 → 에러 화면
-  // TODO: WS-01이 끊기면 'reconnecting'
   const [connection, setConnection] = useState(
     USE_MOCK ? 'connected' : 'loading',
   );
@@ -319,6 +319,47 @@ export const useLiveMeeting = (meetingId) => {
     const id = setInterval(syncMeeting, WAITING_POLL_MS);
     return () => clearInterval(id);
   }, [isWaitingMember, syncMeeting]);
+
+  // WS-01 상태 동기화 (API-04로 처음 불러온 뒤 연결)
+  const handleSocketEvent = useCallback(() => {}, []);
+
+  // 재연결 시 API-04로 상태를 맞춤
+  const handleSocketOpen = useCallback(
+    async ({ isReconnect }) => {
+      if (!isReconnect) return;
+      await syncMeeting();
+      setConnection('connected');
+    },
+    [syncMeeting],
+  );
+
+  // - 4401 토큰 만료: 저장된 토큰을 지우고 참여 페이지 (다시 Sign In)
+  // - 4410 회의 종료됨: 결과 화면
+  // - 4404 회의 없음: 에러 화면
+  // - 그 밖: 로딩 화면
+  const handleSocketClose = useCallback(
+    ({ code, willReconnect }) => {
+      if (code === 4401) {
+        clearMeetingSession(meetingId);
+        navigate(`/m/${meetingId}`, { replace: true });
+      } else if (code === 4410) {
+        navigate(`/result/${meetingId}`, { replace: true });
+      } else if (code === 4404) {
+        setConnection('error');
+      } else if (willReconnect) {
+        setConnection('reconnecting');
+      }
+    },
+    [meetingId, navigate],
+  );
+
+  useMeetingSocket({
+    meetingId,
+    enabled: !USE_MOCK && meeting !== null,
+    onEvent: handleSocketEvent,
+    onOpen: handleSocketOpen,
+    onClose: handleSocketClose,
+  });
 
   // 회의 종료 요청 중 (진행자 버튼 모두 막음)
   const [isEnding, setIsEnding] = useState(false);
