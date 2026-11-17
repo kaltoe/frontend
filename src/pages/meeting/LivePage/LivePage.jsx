@@ -17,7 +17,6 @@ import { ErrorScreen } from './components/status/ErrorScreen';
 import { LoadingScreen } from './components/status/LoadingScreen';
 import { AgendaCard } from './components/timer/AgendaCard';
 import { TotalTimer } from './components/timer/TotalTimer';
-import { WaitingMeeting } from './components/waiting/WaitingMeeting';
 import { useAutoPauseOnMicDenied } from './hooks/useAutoPauseOnMicDenied';
 import { useInviteModal } from './hooks/useInviteModal';
 import { useLiveMeeting } from './hooks/useLiveMeeting';
@@ -67,6 +66,8 @@ const LiveMeeting = ({
   pause,
   resume,
   goToNextAgenda,
+  start,
+  isStarting,
   end,
   isEnding,
   toggleMic,
@@ -77,6 +78,14 @@ const LiveMeeting = ({
   const isHost = meeting.me.role === 'HOST';
 
   const { isInviteOpen, openInvite, closeInvite } = useInviteModal(isHost);
+
+  const isWaiting = meeting.status === 'WAITING';
+  const inviteFooter = isWaiting ? (isHost ? 'start' : 'waiting') : 'close';
+
+  const handleStart = async () => {
+    await start();
+    closeInvite();
+  };
   const timer = useMeetingTimer(meeting.timer);
 
   // 진행자 마이크 권한이 없으면 자동 일시 정지, 허용하면 자동 재개
@@ -224,9 +233,12 @@ const LiveMeeting = ({
       />
 
       <InviteModal
-        open={isInviteOpen}
+        open={isWaiting || isInviteOpen}
         invite={meeting.invite}
         recoveryKey={isHost ? meeting.hostRecoveryKey : null}
+        footer={inviteFooter}
+        isStarting={isStarting}
+        onStart={handleStart}
         onClose={closeInvite}
       />
 
@@ -260,18 +272,13 @@ const LiveMeeting = ({
   );
 };
 
-// 회의 상태(API-04)를 불러오는 동안 로딩, 실패하면 에러 화면, 시작 전이면 대기 화면
+// 회의 상태(API-04)를 불러오는 동안 로딩, 실패하면 에러 화면
 export const LivePage = () => {
   const { meetingId } = useParams();
-  const { connection, meeting, start, ...actions } = useLiveMeeting(meetingId);
+  const { connection, meeting, ...actions } = useLiveMeeting(meetingId);
 
   if (connection === 'error') return <ErrorScreen />;
   if (connection !== 'connected' || !meeting) return <LoadingScreen />;
-
-  // 회의를 만들고 아직 시작 전 (API-02 → WAITING, API-03·04도 WAITING일 수 있음)
-  if (meeting.status === 'WAITING') {
-    return <WaitingMeeting meeting={meeting} start={start} />;
-  }
 
   return <LiveMeeting meeting={meeting} {...actions} />;
 };

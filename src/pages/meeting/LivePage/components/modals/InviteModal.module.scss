@@ -215,6 +215,25 @@
   cursor: pointer;
 }
 
+.start {
+  font-weight: $font-weight-bold;
+  color: $color-primary-400;
+
+  &:disabled {
+    cursor: default;
+  }
+}
+
+// 대기 중 참여자 안내
+.waiting {
+  height: rem(17px);
+  font-size: $font-size-12;
+  line-height: 1.22;
+  letter-spacing: -0.03em;
+  color: $color-gray-400;
+  text-align: center;
+}
+
 .toast {
   position: fixed;
   z-index: 101;

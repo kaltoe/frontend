@@ -59,6 +59,14 @@ export const nextAgenda = async (meetingId, fromAgendaId) => {
   return response.data.data;
 };
 
+// API-19 회의 시작 (진행자만)
+export const startMeeting = async (meetingId) => {
+  const response = await api.post(`/meetings/${meetingId}/start`, null, {
+    meetingId,
+  });
+  return response.data.data;
+};
+
 // API-08 회의 종료 (진행자만)
 export const endMeeting = async (meetingId) => {
   const response = await api.post(`/meetings/${meetingId}/end`, null, {

@@ -9,16 +9,27 @@ export const useAutoPauseOnMicDenied = ({
 }) => {
   const isDenied = micState === 'DENIED';
   const wasDeniedRef = useRef(false);
+  const prevStatusRef = useRef(null);
   const pausedByMicRef = useRef(false);
 
   useEffect(() => {
     if (!isHost) return;
 
     const wasDenied = wasDeniedRef.current;
+    const prevStatus = prevStatusRef.current;
     wasDeniedRef.current = isDenied;
+    prevStatusRef.current = timer.status;
 
-    // 권한 없어짐
-    if (isDenied && !wasDenied && timer.status === 'IN_PROGRESS') {
+    // 대기 중이던 회의가 시작
+    const justStarted =
+      prevStatus === 'WAITING' && timer.status === 'IN_PROGRESS';
+
+    // 권한 없어짐, 또는 권한이 없는 채로 회의가 시작
+    if (
+      isDenied &&
+      timer.status === 'IN_PROGRESS' &&
+      (!wasDenied || justStarted)
+    ) {
       pausedByMicRef.current = true;
       pause(timer);
       return;

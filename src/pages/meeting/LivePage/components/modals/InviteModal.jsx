@@ -27,7 +27,21 @@ const toDisplayUrl = (url) => url.replace(/^https?:\/\//, '');
 
 // 진행자: 회의 라이브 처음 들어올 때 자동으로 뜨고, 상단 초대 버튼으로도 열림
 // 복구 키는 진행자이고 키가 있을 때만 보임
-export const InviteModal = ({ open, invite, recoveryKey, onClose }) => {
+// footer: 모달 맨 아래
+// - 'close': [닫기] (기본)
+// - 'start': 대기 중 진행자 [회의 시작하기]
+// - 'waiting': 대기 중 참여자 안내 문구
+// 대기 중에는 회의가 시작되기 전까지 닫을 수 없음
+export const InviteModal = ({
+  open,
+  invite,
+  recoveryKey,
+  footer = 'close',
+  isStarting = false,
+  onStart,
+  onClose,
+}) => {
+  const canClose = footer === 'close';
   const [copyToast, setCopyToast] = useState(null);
   const closeCopyToast = useCallback(() => setCopyToast(null), []);
 
@@ -43,14 +57,14 @@ export const InviteModal = ({ open, invite, recoveryKey, onClose }) => {
     const prevOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     const handleKeyDown = (event) => {
-      if (event.key === 'Escape') onClose();
+      if (event.key === 'Escape' && canClose) onClose();
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => {
       document.body.style.overflow = prevOverflow;
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [open, onClose]);
+  }, [open, canClose, onClose]);
 
   if (!open || !invite) return null;
 
@@ -65,7 +79,7 @@ export const InviteModal = ({ open, invite, recoveryKey, onClose }) => {
 
   return createPortal(
     <>
-      <div className={styles.overlay} onClick={onClose}>
+      <div className={styles.overlay} onClick={canClose ? onClose : undefined}>
         <section
           className={styles.modal}
           role="dialog"
@@ -153,9 +167,26 @@ export const InviteModal = ({ open, invite, recoveryKey, onClose }) => {
             )}
           </div>
 
-          <button type="button" className={styles.close} onClick={onClose}>
-            닫기
-          </button>
+          {footer === 'close' && (
+            <button type="button" className={styles.close} onClick={onClose}>
+              닫기
+            </button>
+          )}
+          {footer === 'start' && (
+            <button
+              type="button"
+              className={`${styles.close} ${styles.start}`}
+              onClick={onStart}
+              disabled={isStarting}
+            >
+              회의 시작하기
+            </button>
+          )}
+          {footer === 'waiting' && (
+            <p className={styles.waiting} role="status">
+              참여자가 입장하고 있어요.
+            </p>
+          )}
         </section>
       </div>
 
