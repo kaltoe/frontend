@@ -1,7 +1,7 @@
 export const mockMeeting = {
   meetingId: 'K7Q2MX',
   title: '회의 제목',
-  status: 'IN_PROGRESS', // 'IN_PROGRESS' | 'PAUSED' | 'ENDED'
+  status: 'IN_PROGRESS', // 'WAITING' | 'IN_PROGRESS' | 'PAUSED' | 'ENDED'
   connectedCount: 3, // 지금 접속 중인 인원
 
   // 팀원 초대 팝업 (#21)
@@ -53,7 +53,7 @@ export const mockMeeting = {
   //       → totalElapsedSeconds: 1790, currentAgendaId: 14, agendaElapsedSeconds: 590
   timer: {
     serverNow: '2026-11-03T14:00:31+09:00',
-    status: 'IN_PROGRESS', // 'IN_PROGRESS' | 'PAUSED' | 'ENDED'
+    status: 'IN_PROGRESS', // 'WAITING' | 'IN_PROGRESS' | 'PAUSED' | 'ENDED'
     plannedTotalSeconds: 1800, // 전체 목표 시간
     totalElapsedSeconds: 31, // 전체에서 지난 시간
     pausedTotalSeconds: 0, // 누적 정지

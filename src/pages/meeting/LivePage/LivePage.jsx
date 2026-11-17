@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import {
   meetingIconChatWarning,
   meetingIconMicOffSmall,
@@ -17,6 +17,8 @@ import { ErrorScreen } from './components/status/ErrorScreen';
 import { LoadingScreen } from './components/status/LoadingScreen';
 import { AgendaCard } from './components/timer/AgendaCard';
 import { TotalTimer } from './components/timer/TotalTimer';
+import { WaitingMeeting } from './components/waiting/WaitingMeeting';
+import { useInviteModal } from './hooks/useInviteModal';
 import { useLiveMeeting } from './hooks/useLiveMeeting';
 import { useMeetingAlerts } from './hooks/useMeetingAlerts';
 import { useMeetingTimer } from './hooks/useMeetingTimer';
@@ -70,22 +72,7 @@ const LiveMeeting = ({
   const offtopicEvent = meeting.activeOfftopicEvent;
   const isHost = meeting.me.role === 'HOST';
 
-  // 팀원 초대 모달
-  const location = useLocation();
-  const [isInviteOpen, setIsInviteOpen] = useState(
-    () => isHost && Boolean(location.state?.openInvite),
-  );
-  const navigate = useNavigate();
-  const closeInvite = useCallback(() => {
-    setIsInviteOpen(false);
-
-    if (location.state?.openInvite) {
-      navigate(location.pathname + location.search, {
-        replace: true,
-        state: null,
-      });
-    }
-  }, [location, navigate]);
+  const { isInviteOpen, openInvite, closeInvite } = useInviteModal(isHost);
   const timer = useMeetingTimer(meeting.timer);
 
   // 전체 시간 00:00, 사담 경고 알림음 (#23, #35)
@@ -161,7 +148,7 @@ const LiveMeeting = ({
       <LiveHeader
         title={meeting.title}
         participantCount={meeting.connectedCount}
-        onInviteClick={() => setIsInviteOpen(true)}
+        onInviteClick={openInvite}
       />
 
       <main className={styles.content}>
@@ -253,13 +240,18 @@ const LiveMeeting = ({
   );
 };
 
-// 회의 상태(API-04)를 불러오는 동안 로딩, 실패하면 에러 화면
+// 회의 상태(API-04)를 불러오는 동안 로딩, 실패하면 에러 화면, 시작 전이면 대기 화면
 export const LivePage = () => {
   const { meetingId } = useParams();
-  const { connection, meeting, ...actions } = useLiveMeeting(meetingId);
+  const { connection, meeting, start, ...actions } = useLiveMeeting(meetingId);
 
   if (connection === 'error') return <ErrorScreen />;
   if (connection !== 'connected' || !meeting) return <LoadingScreen />;
+
+  // 회의를 만들고 아직 시작 전 (API-02 → WAITING, API-03·04도 WAITING일 수 있음)
+  if (meeting.status === 'WAITING') {
+    return <WaitingMeeting meeting={meeting} start={start} />;
+  }
 
   return <LiveMeeting meeting={meeting} {...actions} />;
 };
