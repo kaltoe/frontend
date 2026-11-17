@@ -34,6 +34,26 @@
   color: $color-gray-500;
 }
 
+// 공유 화면 회의 내용 탭: 만료 안내와 플레이어를 함께 화면 아래에 고정
+.scriptBottom {
+  position: sticky;
+  bottom: 0;
+  flex-shrink: 0;
+  margin-top: auto;
+
+  // 스크롤한 발화가 안내 문구 뒤로 비치지 않게 한다.
+  .expiryNotice {
+    background-color: $color-gray-100;
+  }
+}
+
+.scriptToast {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+}
+
 .floatingToast {
   position: fixed;
   bottom: 52px;
