@@ -87,6 +87,43 @@ const applyStart = (prev, timer) => ({
   ),
 });
 
+// 자막은 현재 안건 최근 200개까지
+const MAX_TRANSCRIPTS = 200;
+
+// WS-01 transcript.partial: 인식 중인 자막
+const applyTranscriptPartial = (prev, partial) => ({
+  ...prev,
+  partialTranscript: partial,
+});
+
+// WS-01 transcript.final: 확정 자막을 목록 끝에 붙이고, 같은 문장의 인식 중 자막은 제거
+// - 이전 안건 발화는 붙이지 않음
+// - 같은 발화가 두 번 오면 무시
+const applyTranscriptFinal = (prev, final) => {
+  const isSameSegment = prev.partialTranscript?.segmentKey === final.segmentKey;
+  const partialTranscript = isSameSegment ? null : prev.partialTranscript;
+
+  const isOtherAgenda = final.agendaId !== prev.timer.currentAgendaId;
+  const isDuplicate = prev.transcripts.some(
+    (transcript) => transcript.utteranceId === final.utteranceId,
+  );
+  if (isOtherAgenda || isDuplicate) return { ...prev, partialTranscript };
+
+  const transcript = {
+    utteranceId: final.utteranceId,
+    text: final.text,
+    offsetMs: final.offsetMs,
+    agendaId: final.agendaId,
+    participantId: final.participantId,
+    speakerName: final.speakerName,
+  };
+  return {
+    ...prev,
+    transcripts: [...prev.transcripts, transcript].slice(-MAX_TRANSCRIPTS),
+    partialTranscript,
+  };
+};
+
 // 안건 전환 결과 반영 (API-07 응답, WS-01 agenda.changed도 같은 모양)
 const applyAgendaChange = (prev, { previousAgenda, currentAgenda, timer }) => ({
   ...applyServerTimer(prev, timer),
@@ -323,6 +360,17 @@ export const useLiveMeeting = (meetingId) => {
           break;
         case 'meeting.ended':
           navigate(`/result/${meetingId}`, { replace: true });
+          break;
+
+        // 자막
+        case 'transcript.partial':
+          setMeeting((prev) => applyTranscriptPartial(prev, data));
+          break;
+        case 'transcript.final':
+          setMeeting((prev) => applyTranscriptFinal(prev, data));
+          break;
+        case 'stt.status': // OK | DELAYED(지연) | NO_AUDIO(음성 미감지)
+          setMeeting((prev) => ({ ...prev, sttStatus: data.state }));
           break;
         default:
           break;
