@@ -22,6 +22,7 @@ import styles from './ResultPage.module.scss';
 import { useAudioPlayer } from './useAudioPlayer';
 import { useMeetingResult } from './useMeetingResult';
 import { useMeetingSummary } from './useMeetingSummary';
+import { useMeetingTranscripts } from './useMeetingTranscripts';
 
 // readOnly: 공유 링크로 들어온 화면. 공유 버튼 없이 볼 수 있는 기한을 알려준다.
 export const ResultPage = ({ readOnly = false }) => {
@@ -79,6 +80,8 @@ const ResultContent = ({ meetingId, meeting, readOnly, isMock }) => {
 
   // API-11 안건별 3줄 요약 (만드는 중이면 3초마다 다시 확인)
   const summary = useMeetingSummary(meetingId, meeting.agendas, isMock);
+  // API-14 회의 내용 (안건별 발화)
+  const transcripts = useMeetingTranscripts(meetingId, meeting.agendas, isMock);
   // 다시 복사하면 토스트를 새로 띄워 닫히는 시간을 처음부터 센다.
   const [copyToastKey, setCopyToastKey] = useState(null);
   const [scriptHighlight, setScriptHighlight] = useState(null);
@@ -173,6 +176,7 @@ const ResultContent = ({ meetingId, meeting, readOnly, isMock }) => {
             {tab === 'script' && (
               <ScriptTab
                 meeting={meeting}
+                transcripts={transcripts}
                 highlight={scriptHighlight}
                 isLocked={meeting.isScriptLocked}
                 onSelect={handleSelectScript}
