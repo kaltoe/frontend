@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
+  dismissOfftopicEvent,
   endMeeting,
   getMeetingState,
   nextAgenda,
@@ -8,8 +9,9 @@ import {
   resumeMeeting,
   startMeeting,
 } from '@/api/meeting';
-import { getMeetingSession } from '@/utils/meetingSession';
+import { clearMeetingSession, getMeetingSession } from '@/utils/meetingSession';
 import { mockMeeting } from '../mockMeeting';
+import { useMeetingSocket } from './useMeetingSocket';
 
 const USE_MOCK =
   import.meta.env.DEV && import.meta.env.VITE_USE_MOCK === 'true';
@@ -86,8 +88,61 @@ const applyStart = (prev, timer) => ({
   ),
 });
 
-// 대기 중 참여자가 회의 상태를 다시 확인하는 간격 (WS-01 meeting.started 연동 전 임시)
-const WAITING_POLL_MS = 3000;
+// 자막은 현재 안건 최근 200개까지
+const MAX_TRANSCRIPTS = 200;
+
+// WS-01 transcript.partial: 인식 중인 자막
+const applyTranscriptPartial = (prev, partial) => ({
+  ...prev,
+  partialTranscript: partial,
+});
+
+// WS-01 transcript.final: 확정 자막을 목록 끝에 붙이고, 같은 문장의 인식 중 자막은 제거
+// - 이전 안건 발화는 붙이지 않음
+// - 같은 발화가 두 번 오면 무시
+const applyTranscriptFinal = (prev, final) => {
+  const isSameSegment = prev.partialTranscript?.segmentKey === final.segmentKey;
+  const partialTranscript = isSameSegment ? null : prev.partialTranscript;
+
+  const isOtherAgenda = final.agendaId !== prev.timer.currentAgendaId;
+  const isDuplicate = prev.transcripts.some(
+    (transcript) => transcript.utteranceId === final.utteranceId,
+  );
+  if (isOtherAgenda || isDuplicate) return { ...prev, partialTranscript };
+
+  const transcript = {
+    utteranceId: final.utteranceId,
+    text: final.text,
+    offsetMs: final.offsetMs,
+    agendaId: final.agendaId,
+    participantId: final.participantId,
+    speakerName: final.speakerName,
+  };
+  return {
+    ...prev,
+    transcripts: [...prev.transcripts, transcript].slice(-MAX_TRANSCRIPTS),
+    partialTranscript,
+  };
+};
+
+// 떠 있는 사담 경고가 같은 이벤트면 닫음
+const closeOfftopicEvent = (prev, eventId) =>
+  prev.activeOfftopicEvent?.eventId === eventId
+    ? { ...prev, activeOfftopicEvent: null }
+    : prev;
+
+// 참가자 목록에서 해당 참가자의 정보를 바꿈 (목록에 없으면 추가)
+const upsertParticipant = (participants = [], participantId, changes) => {
+  const exists = participants.some(
+    (participant) => participant.participantId === participantId,
+  );
+  if (!exists) return [...participants, { participantId, ...changes }];
+  return participants.map((participant) =>
+    participant.participantId === participantId
+      ? { ...participant, ...changes }
+      : participant,
+  );
+};
 
 // 안건 전환 결과 반영 (API-07 응답, WS-01 agenda.changed도 같은 모양)
 const applyAgendaChange = (prev, { previousAgenda, currentAgenda, timer }) => ({
@@ -144,7 +199,6 @@ export const useLiveMeeting = (meetingId) => {
   // - 'connected': 회의 화면
   // - 'reconnecting': 끊겨서 다시 연결 중 → 로딩 화면
   // - 'error': 없는 회의, 서버·네트워크 오류 → 에러 화면
-  // TODO: WS-01이 끊기면 'reconnecting'
   const [connection, setConnection] = useState(
     USE_MOCK ? 'connected' : 'loading',
   );
@@ -309,16 +363,136 @@ export const useLiveMeeting = (meetingId) => {
     }
   }, [meetingId, handleControlError]);
 
-  // 대기 중인 참여자: 진행자가 시작했는지 3초마다 확인 (API-04)
-  // 시작되면 받은 상태로 라이브 화면이 됨
-  // TODO: WS-01 meeting.started를 받으면 이 확인은 지움
-  const isWaitingMember =
-    meeting?.status === 'WAITING' && meeting.me.role !== 'HOST';
+  // WS-01 상태 동기화 (API-04로 처음 불러온 뒤 연결)
+  const handleSocketEvent = useCallback(
+    ({ type, data }) => {
+      switch (type) {
+        case 'meeting.started':
+          setMeeting((prev) => applyStart(prev, data.timer));
+          break;
+        case 'meeting.paused':
+        case 'meeting.resumed':
+        case 'timer.sync': // 진행 중 30초마다 시간 보정
+          setMeeting((prev) => applyServerTimer(prev, data.timer));
+          break;
+        case 'agenda.changed':
+          setMeeting((prev) => applyAgendaChange(prev, data));
+          break;
+        case 'meeting.ended':
+          navigate(`/result/${meetingId}`, { replace: true });
+          break;
+
+        // 자막
+        case 'transcript.partial':
+          setMeeting((prev) => applyTranscriptPartial(prev, data));
+          break;
+        case 'transcript.final':
+          setMeeting((prev) => applyTranscriptFinal(prev, data));
+          break;
+        case 'stt.status': // OK | DELAYED(지연) | NO_AUDIO(음성 미감지)
+          setMeeting((prev) => ({ ...prev, sttStatus: data.state }));
+          break;
+
+        // 사담
+        case 'offtopic.warning': // 전원에게 경고 팝업 (알림음은 eventId가 바뀔 때 한 번)
+          setMeeting((prev) => ({ ...prev, activeOfftopicEvent: data }));
+          break;
+        case 'offtopic.dismissed': // 누군가 "관련 있는 이야기에요."를 누름 → 전원 닫힘
+          setMeeting((prev) => closeOfftopicEvent(prev, data.eventId));
+          break;
+        case 'offtopic.status': // 사담 판정 OK | ERROR
+          setMeeting((prev) => ({ ...prev, offtopicStatus: data.state }));
+          break;
+
+        // connectedCount: 지금 접속 중인 참가자 수 (같은 사람이 여러 기기로 들어와도 1명)
+        case 'participant.joined': // 참가자의 첫 연결 때만 옴
+          setMeeting((prev) => ({
+            ...prev,
+            connectedCount: data.connectedCount,
+            participants: upsertParticipant(
+              prev.participants,
+              data.participantId,
+              { name: data.name, role: data.role, isConnected: true },
+            ),
+          }));
+          break;
+        case 'participant.left': // 참가자의 마지막 연결이 끊길 때만 옴
+          setMeeting((prev) => ({
+            ...prev,
+            connectedCount: data.connectedCount,
+            participants: upsertParticipant(
+              prev.participants,
+              data.participantId,
+              { isConnected: false },
+            ),
+          }));
+          break;
+        // 마이크 상태 변경.
+        case 'participant.updated':
+          setMeeting((prev) => ({
+            ...prev,
+            participants: upsertParticipant(
+              prev.participants,
+              data.participantId,
+              { micState: data.micState },
+            ),
+          }));
+          break;
+
+        // 녹음 상태: RECORDING | INTERRUPTED | PAUSED
+        case 'recording.status':
+          setMeeting((prev) => ({ ...prev, recording: data }));
+          break;
+        default:
+          break;
+      }
+    },
+    [meetingId, navigate],
+  );
+
+  // 대기 중인지 (소켓 콜백에서 최신 값을 보기 위해 ref로 둠)
+  const isWaitingRef = useRef(false);
   useEffect(() => {
-    if (USE_MOCK || !isWaitingMember) return undefined;
-    const id = setInterval(syncMeeting, WAITING_POLL_MS);
-    return () => clearInterval(id);
-  }, [isWaitingMember, syncMeeting]);
+    isWaitingRef.current = meeting?.status === 'WAITING';
+  });
+
+  // 연결되면 API-04로 상태를 맞춤
+  const handleSocketOpen = useCallback(
+    async ({ isReconnect }) => {
+      if (!isReconnect && !isWaitingRef.current) return;
+      await syncMeeting();
+      setConnection('connected');
+    },
+    [syncMeeting],
+  );
+
+  // - 4401 토큰 만료: 저장된 토큰을 지우고 참여 페이지 (다시 Sign In)
+  // - 4410 회의 종료됨: 결과 화면
+  // - 4404 회의 없음: 에러 화면
+  // - 그 밖: 로딩 화면
+  const handleSocketClose = useCallback(
+    ({ code, willReconnect }) => {
+      if (code === 4401) {
+        clearMeetingSession(meetingId);
+        navigate(`/m/${meetingId}`, { replace: true });
+      } else if (code === 4410) {
+        navigate(`/result/${meetingId}`, { replace: true });
+      } else if (code === 4404) {
+        setConnection('error');
+      } else if (willReconnect) {
+        setConnection('reconnecting');
+      }
+    },
+    [meetingId, navigate],
+  );
+
+  useMeetingSocket({
+    meetingId,
+    enabled: !USE_MOCK && meeting !== null,
+    onEvent: handleSocketEvent,
+    onOpen: handleSocketOpen,
+    onClose: handleSocketClose,
+  });
 
   // 회의 종료 요청 중 (진행자 버튼 모두 막음)
   const [isEnding, setIsEnding] = useState(false);
@@ -357,10 +531,22 @@ export const useLiveMeeting = (meetingId) => {
     setMeeting((prev) => ({ ...prev, activeOfftopicEvent: null }));
   }, []);
 
-  // 관련 있는 이야기에요. → 모든 화면에서 닫힘
-  const dismissOfftopic = useCallback(() => {
-    setMeeting((prev) => ({ ...prev, activeOfftopicEvent: null }));
-  }, []);
+  // "관련 있는 이야기에요." (API-09) → 모든 화면에서 닫힘
+  const dismissOfftopic = useCallback(
+    async (eventId) => {
+      setMeeting((prev) => closeOfftopicEvent(prev, eventId));
+      if (USE_MOCK) return;
+
+      try {
+        await dismissOfftopicEvent(meetingId, eventId);
+      } catch (error) {
+        if (error.response?.status === 401) {
+          navigate(`/m/${meetingId}`, { replace: true });
+        }
+      }
+    },
+    [meetingId, navigate],
+  );
 
   return {
     connection,

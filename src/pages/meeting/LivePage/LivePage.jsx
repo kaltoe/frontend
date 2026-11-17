@@ -247,7 +247,7 @@ const LiveMeeting = ({
           key={offtopicEvent.eventId}
           agendaTitle={offtopicEvent.agendaTitle}
           autoCloseSeconds={offtopicEvent.autoCloseSeconds}
-          onRelated={dismissOfftopic}
+          onRelated={() => dismissOfftopic(offtopicEvent.eventId)}
           onClose={closeOfftopic}
         />
       )}
