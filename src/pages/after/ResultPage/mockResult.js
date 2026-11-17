@@ -63,7 +63,8 @@ export const mockResult = {
       utterances: createUtterances(1, 12),
     },
     {
-      summary: ['요약 내용', '요약 내용', '요약 내용'],
+      // 발언이 없던 안건 예시
+      summary: [],
       utterances: createUtterances(2, 720),
     },
     {
