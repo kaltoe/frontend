@@ -22,20 +22,28 @@ const getMockGroups = (agendas) =>
   }));
 
 // 잠긴 회의 내용 자리에 흐리게 깔아 둘 글. 실제 기록은 받지 못한다.
-const LOCKED_LINE =
-  '잠긴 회의 내용입니다. 잠긴 회의 내용입니다. 잠긴 회의 내용입니다.';
-const getLockedGroups = (agendas) =>
-  agendas.map((agenda) => ({
+// 화면이 비어 보이지 않도록 두 줄로 넘어가는 긴 발화를 안건마다 4개 이상, 모두 합쳐 12개 이상 깐다.
+const LOCKED_SPEAKER = '화자 1';
+const LOCKED_LINE = '발화내용'.repeat(11);
+const LOCKED_MIN_LINES_PER_AGENDA = 4;
+const LOCKED_MIN_LINES_TOTAL = 12;
+const getLockedGroups = (agendas) => {
+  const lineCount = Math.max(
+    LOCKED_MIN_LINES_PER_AGENDA,
+    Math.ceil(LOCKED_MIN_LINES_TOTAL / Math.max(agendas.length, 1)),
+  );
+  return agendas.map((agenda) => ({
     id: agenda.id,
     title: agenda.title,
     startSeconds: agenda.startSeconds,
-    utterances: [0, 1, 2].map((index) => ({
+    utterances: Array.from({ length: lineCount }, (_, index) => ({
       id: `${agenda.id}-locked-${index}`,
       startSeconds: (agenda.startSeconds ?? 0) + index * 15,
-      speaker: null,
+      speaker: LOCKED_SPEAKER,
       text: LOCKED_LINE,
     })),
   }));
+};
 
 // API-14 응답을 회의 내용 탭에서 쓰는 모양으로 바꾼다.
 // 안건 위치(startSeconds)는 API-10 안건의 녹음 시작 위치를 쓴다.
