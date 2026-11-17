@@ -1,4 +1,5 @@
 import { chevronDown, chevronUp } from '@/assets';
+import { NO_SPEECH_SUMMARY } from '../constants';
 import styles from './SummaryItem.module.scss';
 
 export const SummaryItem = ({ order, agenda, isOpen, onToggle }) => {
@@ -17,13 +18,16 @@ export const SummaryItem = ({ order, agenda, isOpen, onToggle }) => {
         <img src={isOpen ? chevronUp : chevronDown} alt="" />
       </button>
 
-      {isOpen && (
-        <ul className={styles.lines}>
-          {agenda.summary.map((line, index) => (
-            <li key={index}>{line}</li>
-          ))}
-        </ul>
-      )}
+      {isOpen &&
+        (agenda.summary.length > 0 ? (
+          <ul className={styles.lines}>
+            {agenda.summary.map((line, index) => (
+              <li key={index}>{line}</li>
+            ))}
+          </ul>
+        ) : (
+          <p className={styles.noSpeech}>{NO_SPEECH_SUMMARY}</p>
+        ))}
     </li>
   );
 };

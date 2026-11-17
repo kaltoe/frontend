@@ -58,3 +58,27 @@ export const getMeetingResult = async (meetingId) => {
   });
   return response.data.data;
 };
+
+// API-11 요약 조회
+// 응답: { status: PROCESSING | DONE | FAILED, agendas: [{ agendaId, lines }] }
+// 항상 200 (AI 실패도 status: FAILED). PROCESSING이면 3초마다 다시 부른다
+// DONE이면 끝낸 안건이 순서대로 오고, 발언이 없던 안건은 lines: []
+export const getSummary = async (meetingId) => {
+  const response = await api.get(`/meetings/${meetingId}/summary`, {
+    meetingId,
+  });
+  return response.data.data;
+};
+
+// API-12 요약 다시 생성
+// FAILED일 때만 202 { status: PROCESSING }. 아니면(이미 만드는 중 등) 409 INVALID_STATE
+export const retrySummary = async (meetingId) => {
+  const response = await api.post(
+    `/meetings/${meetingId}/summary/retry`,
+    null,
+    {
+      meetingId,
+    },
+  );
+  return response.data.data;
+};
