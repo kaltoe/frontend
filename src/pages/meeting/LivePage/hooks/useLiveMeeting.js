@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
+  dismissOfftopicEvent,
   endMeeting,
   getMeetingState,
   nextAgenda,
@@ -123,6 +124,12 @@ const applyTranscriptFinal = (prev, final) => {
     partialTranscript,
   };
 };
+
+// 떠 있는 사담 경고가 같은 이벤트면 닫음
+const closeOfftopicEvent = (prev, eventId) =>
+  prev.activeOfftopicEvent?.eventId === eventId
+    ? { ...prev, activeOfftopicEvent: null }
+    : prev;
 
 // 안건 전환 결과 반영 (API-07 응답, WS-01 agenda.changed도 같은 모양)
 const applyAgendaChange = (prev, { previousAgenda, currentAgenda, timer }) => ({
@@ -372,6 +379,17 @@ export const useLiveMeeting = (meetingId) => {
         case 'stt.status': // OK | DELAYED(지연) | NO_AUDIO(음성 미감지)
           setMeeting((prev) => ({ ...prev, sttStatus: data.state }));
           break;
+
+        // 사담
+        case 'offtopic.warning': // 전원에게 경고 팝업 (알림음은 eventId가 바뀔 때 한 번)
+          setMeeting((prev) => ({ ...prev, activeOfftopicEvent: data }));
+          break;
+        case 'offtopic.dismissed': // 누군가 "관련 있는 이야기에요."를 누름 → 전원 닫힘
+          setMeeting((prev) => closeOfftopicEvent(prev, data.eventId));
+          break;
+        case 'offtopic.status': // 사담 판정 OK | ERROR
+          setMeeting((prev) => ({ ...prev, offtopicStatus: data.state }));
+          break;
         default:
           break;
       }
@@ -460,10 +478,22 @@ export const useLiveMeeting = (meetingId) => {
     setMeeting((prev) => ({ ...prev, activeOfftopicEvent: null }));
   }, []);
 
-  // 관련 있는 이야기에요. → 모든 화면에서 닫힘
-  const dismissOfftopic = useCallback(() => {
-    setMeeting((prev) => ({ ...prev, activeOfftopicEvent: null }));
-  }, []);
+  // "관련 있는 이야기에요." (API-09) → 모든 화면에서 닫힘
+  const dismissOfftopic = useCallback(
+    async (eventId) => {
+      setMeeting((prev) => closeOfftopicEvent(prev, eventId));
+      if (USE_MOCK) return;
+
+      try {
+        await dismissOfftopicEvent(meetingId, eventId);
+      } catch (error) {
+        if (error.response?.status === 401) {
+          navigate(`/m/${meetingId}`, { replace: true });
+        }
+      }
+    },
+    [meetingId, navigate],
+  );
 
   return {
     connection,

@@ -75,6 +75,18 @@ export const endMeeting = async (meetingId) => {
   return response.data.data;
 };
 
+// API-09 사담 경고 닫기
+// 응답: { eventId, dismissedAt }. 전원에게 offtopic.dismissed가 감
+// 이미 닫힌 경고면 다시 보내도 200, 없는 경고(다른 회의 등)는 404
+export const dismissOfftopicEvent = async (meetingId, eventId) => {
+  const response = await api.post(
+    `/meetings/${meetingId}/offtopic-events/${eventId}/dismiss`,
+    null,
+    { meetingId },
+  );
+  return response.data.data;
+};
+
 // API-10 회의 결과 조회
 // 끝낸 안건만 오고, 소요 시간을 계산하지 못하면(UNKNOWN) 시간 값이 모두 null
 // 토큰이 없거나 만료되면 401, 끝나지 않은 회의는 409
