@@ -1,10 +1,9 @@
 import { mockResult } from './mockResult';
 
 // API-10 응답을 결과 화면에서 쓰는 모양으로 바꾼다.
-// 공유 값은 아직 연동 전이라 임시 데이터를 붙인다.
-// TODO: API-15 연동 후 임시 데이터 대신 각 응답으로 교체
+// 공유 화면의 만료 날짜는 아직 연동 전이라 임시 데이터를 붙인다.
+// TODO: API-16 연동 후 공유 화면 응답의 expiresAt으로 교체
 export const toResultMeeting = (result) => ({
-  shareCode: mockResult.shareCode,
   shareExpiresAt: mockResult.shareExpiresAt,
   title: result.title,
   participantCount: result.participantCount,

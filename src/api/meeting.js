@@ -130,3 +130,14 @@ export const getTranscripts = async (meetingId) => {
   });
   return response.data.data;
 };
+
+// API-15 공유 링크 발급 (끝난 회의만)
+// 응답: { shareId, shareUrl, expiresAt }. expiresAt은 회의 종료 + 7일
+// 쓸 수 있는 링크가 있으면 같은 링크를 다시 준다
+// 종료 후 7일이 지나면 410 SHARE_EXPIRED
+export const createShareLink = async (meetingId) => {
+  const response = await api.post(`/meetings/${meetingId}/share`, null, {
+    meetingId,
+  });
+  return response.data.data;
+};
