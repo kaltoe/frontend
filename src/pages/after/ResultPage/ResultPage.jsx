@@ -18,6 +18,7 @@ import { RESULT_TABS } from './constants';
 import { formatDate } from './formatResult';
 import { getSummaryText } from './getSummaryText';
 import { getTimeResult } from './getTimeResult';
+import { isScriptLockPassed } from './scriptLock';
 import styles from './ResultPage.module.scss';
 import { useAudioPlayer } from './useAudioPlayer';
 import { RECORDING_STATUS, useMeetingRecording } from './useMeetingRecording';
@@ -85,16 +86,25 @@ const ResultContent = ({ meetingId, meeting, readOnly, isMock }) => {
   // API-11 안건별 3줄 요약 (만드는 중이면 3초마다 다시 확인)
   const summary = useMeetingSummary(meetingId, meeting.agendas, isMock);
   // API-14 회의 내용 (안건별 발화)
-  const transcripts = useMeetingTranscripts(meetingId, meeting.agendas, isMock);
+  // 참가자 결과 화면은 종료 후 7일이 지나면 회의 내용 탭을 잠근다. (들어올 때 한 번 판단)
+  const [isLockPassed] = useState(
+    () => !readOnly && isScriptLockPassed(meeting.endedAt, Date.now()),
+  );
+  const transcripts = useMeetingTranscripts(meetingId, meeting.agendas, {
+    isMock,
+    isLocked: isLockPassed,
+  });
   // 다시 복사하면 토스트를 새로 띄워 닫히는 시간을 처음부터 센다.
   const [copyToastKey, setCopyToastKey] = useState(null);
   const [scriptHighlight, setScriptHighlight] = useState(null);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
   // API-13 녹음 (합치는 중이면 3초마다 다시 확인)
-  const recording = useMeetingRecording(meetingId, isMock);
-  // 녹음이나 회의 내용의 보관 기간이 지나면(410) 회의 내용 탭을 결제 잠금 창으로 가린다.
-  // 잠그는 기간은 서버가 정하므로 서버만 바뀌면 화면은 그대로 따른다.
+  const recording = useMeetingRecording(meetingId, {
+    isMock,
+    isLocked: isLockPassed,
+  });
+  // 종료 후 7일이 지났거나, 서버가 녹음·회의 내용을 410으로 막으면 회의 내용 탭을 결제 잠금 창으로 가린다.
   const isScriptLocked =
     transcripts.status === TRANSCRIPTS_STATUS.LOCKED ||
     recording.status === RECORDING_STATUS.EXPIRED;

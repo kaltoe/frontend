@@ -57,20 +57,27 @@ const toGroups = (data, agendas) =>
 // API-14 전체 기록 조회. 처음 들어올 때 한 번 부른다.
 // 대면 회의의 녹음 후처리(화자 구분)가 끝난 기록은 새로고침하면 받는다.
 // agendas: API-10 안건 목록
-export const useMeetingTranscripts = (meetingId, agendas, isMock) => {
+// isLocked: 종료 후 기간이 지나 잠겼으면 기록을 받지 않고 흐리게 가릴 자리 글만 깔아 둔다.
+export const useMeetingTranscripts = (
+  meetingId,
+  agendas,
+  { isMock, isLocked },
+) => {
   const navigate = useNavigate();
 
-  const [status, setStatus] = useState(
-    isMock ? TRANSCRIPTS_STATUS.DONE : TRANSCRIPTS_STATUS.LOADING,
-  );
-  const [groups, setGroups] = useState(() =>
-    isMock ? getMockGroups(agendas) : [],
-  );
+  const [status, setStatus] = useState(() => {
+    if (isLocked) return TRANSCRIPTS_STATUS.LOCKED;
+    return isMock ? TRANSCRIPTS_STATUS.DONE : TRANSCRIPTS_STATUS.LOADING;
+  });
+  const [groups, setGroups] = useState(() => {
+    if (isLocked) return getLockedGroups(agendas);
+    return isMock ? getMockGroups(agendas) : [];
+  });
   // 다시 시도할 때마다 올려서 요청을 다시 보낸다.
   const [requestKey, setRequestKey] = useState(0);
 
   useEffect(() => {
-    if (isMock) return undefined;
+    if (isMock || isLocked) return undefined;
 
     let ignore = false;
 
@@ -100,7 +107,7 @@ export const useMeetingTranscripts = (meetingId, agendas, isMock) => {
     return () => {
       ignore = true;
     };
-  }, [meetingId, agendas, isMock, navigate, requestKey]);
+  }, [meetingId, agendas, isMock, isLocked, navigate, requestKey]);
 
   const retry = () => {
     setStatus(TRANSCRIPTS_STATUS.LOADING);

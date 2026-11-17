@@ -28,7 +28,8 @@ const EMPTY_RECORDING = { status: null, url: null, durationSeconds: null };
 // API-13 녹음 조회
 // 회의가 끝나면 서버가 기기별 녹음을 하나로 합치는 동안(PROCESSING) 3초마다 다시 확인한다.
 // status가 null이면 아직 첫 응답을 받기 전이다.
-export const useMeetingRecording = (meetingId, isMock) => {
+// isLocked: 종료 후 기간이 지나 잠겼으면 녹음을 받지 않는다.
+export const useMeetingRecording = (meetingId, { isMock, isLocked }) => {
   const navigate = useNavigate();
   const isOnline = useOnlineStatus();
 
@@ -42,6 +43,7 @@ export const useMeetingRecording = (meetingId, isMock) => {
   // 오프라인이면 멈췄다가 다시 연결되면 이어서 부른다.
   const shouldFetch =
     !isMock &&
+    !isLocked &&
     isOnline &&
     (recording.status === null ||
       recording.status === RECORDING_STATUS.PROCESSING ||
