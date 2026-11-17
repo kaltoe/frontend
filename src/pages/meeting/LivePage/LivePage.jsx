@@ -18,6 +18,7 @@ import { LoadingScreen } from './components/status/LoadingScreen';
 import { AgendaCard } from './components/timer/AgendaCard';
 import { TotalTimer } from './components/timer/TotalTimer';
 import { WaitingMeeting } from './components/waiting/WaitingMeeting';
+import { useAutoPauseOnMicDenied } from './hooks/useAutoPauseOnMicDenied';
 import { useInviteModal } from './hooks/useInviteModal';
 import { useLiveMeeting } from './hooks/useLiveMeeting';
 import { useMeetingAlerts } from './hooks/useMeetingAlerts';
@@ -75,6 +76,15 @@ const LiveMeeting = ({
   const { isInviteOpen, openInvite, closeInvite } = useInviteModal(isHost);
   const timer = useMeetingTimer(meeting.timer);
 
+  // 진행자 마이크 권한이 없으면 자동 일시 정지, 허용하면 자동 재개
+  useAutoPauseOnMicDenied({
+    isHost,
+    micState: meeting.me.micState,
+    timer,
+    pause,
+    resume,
+  });
+
   // 전체 시간 00:00, 사담 경고 알림음 (#23, #35)
   useMeetingAlerts({
     totalRemainingSeconds: timer.totalRemainingSeconds,
@@ -96,6 +106,8 @@ const LiveMeeting = ({
   const isPaused = timer.status === 'PAUSED';
 
   // 일시정지 토스트와 자막 토스트는 같은 자리에 뜸 → 나중에 뜬 토스트만 보여줌
+  // 단, 진행자 마이크 권한이 없어서 멈춘 경우는 권한 토스트만 보여줌 (진행자가 할 일은 권한 허용)
+  const isHostMicDenied = isHost && meeting.me.micState === 'DENIED';
 
   // 정지되는 순간 토스트를 띄우고, 재개되면 닫음 (새로고침해서 이미 정지 상태로 들어오면 안 띄움)
   const [prevIsPaused, setPrevIsPaused] = useState(isPaused);
@@ -103,8 +115,12 @@ const LiveMeeting = ({
   const [captionToast, setCaptionToast] = useState(null);
   if (isPaused !== prevIsPaused) {
     setPrevIsPaused(isPaused);
-    setIsPauseToastOpen(isPaused);
-    if (isPaused) setCaptionToast(null);
+    if (!isPaused) {
+      setIsPauseToastOpen(false);
+    } else if (!isHostMicDenied) {
+      setIsPauseToastOpen(true);
+      setCaptionToast(null);
+    }
   }
   const closePauseToast = useCallback(() => setIsPauseToastOpen(false), []);
 
