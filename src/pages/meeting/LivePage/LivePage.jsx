@@ -66,6 +66,7 @@ const LiveMeeting = ({
   meeting,
   pause,
   resume,
+  goToNextAgenda,
   toggleMic,
   closeOfftopic,
   dismissOfftopic,
@@ -152,7 +153,7 @@ const LiveMeeting = ({
 
   const handleConfirm = () => {
     if (confirmModal === 'next') {
-      // TODO: API-07 POST /meetings/{meetingId}/agendas/next
+      goToNextAgenda(timer);
     } else if (confirmModal === 'end') {
       // TODO: API-08 POST /meetings/{meetingId}/end → 회의 후 화면으로 이동
     }
