@@ -11,6 +11,7 @@ import {
 } from '@/api/meeting';
 import { clearMeetingSession, getMeetingSession } from '@/utils/meetingSession';
 import { mockMeeting } from '../mockMeeting';
+import { useAudioStream } from './useAudioStream';
 import { useMeetingSocket } from './useMeetingSocket';
 import { useMicrophone } from './useMicrophone';
 
@@ -529,7 +530,6 @@ export const useLiveMeeting = (meetingId) => {
     });
   }, []);
 
-  // TODO: stream을 음성 송출(WS-02)에 연결
   const { stream: micStream } = useMicrophone({
     enabled: !USE_MOCK && meeting !== null,
     onPermissionChange: handleMicPermission,
@@ -551,6 +551,16 @@ export const useLiveMeeting = (meetingId) => {
     if (USE_MOCK || !micState) return;
     sendSocket('mic.status', { state: micState });
   }, [micState, sendSocket]);
+
+  // 음성 송출 (WS-02): 회의가 시작된 뒤부터 연결
+  // 대기 중에는 연결하지 않음
+  const isStarted =
+    meeting?.status === 'IN_PROGRESS' || meeting?.status === 'PAUSED';
+  useAudioStream({
+    meetingId,
+    enabled: !USE_MOCK && isStarted,
+    stream: micStream,
+  });
 
   // 회의 종료 요청 중 (진행자 버튼 모두 막음)
   const [isEnding, setIsEnding] = useState(false);

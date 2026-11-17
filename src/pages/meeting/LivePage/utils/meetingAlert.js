@@ -12,7 +12,9 @@ let audioContext = null;
 // type별로 한 번만 불러와서 재사용
 const bufferPromises = {};
 
-const getAudioContext = () => {
+// 알림음과 음성 송출(WS-02)이 같은 AudioContext를 씀
+// → 입장 버튼·첫 터치에서 깨운(unlockMeetingAlert) 상태를 음성 송출도 그대로 씀
+export const getAudioContext = () => {
   if (audioContext) return audioContext;
   const AudioContextClass = window.AudioContext || window.webkitAudioContext;
   if (!AudioContextClass) return null;
