@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { getMeetingSession } from '@/utils/meetingSession';
 import { getAudioContext } from '../utils/meetingAlert';
 // 오디오 스레드에서 도는 파일이라 별도 파일로 내보내고 주소만 받음 (Vite ?worker&url)
@@ -13,14 +13,31 @@ import workletUrl from '../utils/pcmRecorderWorklet.js?worker&url';
 //   4401 토큰 없음·만료, 4404 회의 없음, 4410 회의 종료됨 (WS-01에서 화면 이동 처리)
 //   4409 같은 참가자가 다른 기기에서 음성을 보내기 시작함 → 이 기기는 송출 중단
 //   1008 audio.start 형식 오류
+// - 연결이 끊긴 동안의 소리는 최대 10분까지 모아 두었다가, 다시 연결되면 이어서 보냄
+//   audio.start의 startOffsetMs = 모아 둔 첫 청크의 녹음 위치 (첫 연결은 null)
+//   녹음 위치는 회의 경과 시간(일시 정지 제외)이라, 일시 정지 중 소리는 모으지 않음 (서버도 버림)
 const WS_URL = import.meta.env.VITE_WS_URL;
 const SAMPLE_RATE = 16000;
 const CHUNK_MS = 200;
 const RECONNECT_DELAYS_MS = [1000, 2000, 4000, 8000];
 const MAX_RECONNECT_DELAY_MS = 10000;
 const NO_RECONNECT_CODES = new Set([4401, 4404, 4409, 4410, 1008]);
+// 끊긴 동안 모아 둘 최대 청크 수: 10분 (200ms × 3000 = 약 19MB, WS-02 클라이언트 버퍼)
+const MAX_BUFFER_CHUNKS = (10 * 60 * 1000) / CHUNK_MS;
 
-export const useAudioStream = ({ meetingId, enabled, stream }) => {
+// getRecordingPosition: () => { offsetMs, isRecording } 지금 녹음 위치(ms)와 진행 중 여부
+export const useAudioStream = ({
+  meetingId,
+  enabled,
+  stream,
+  getRecordingPosition,
+}) => {
+  // 소켓을 다시 열지 않도록 최신 함수만 ref에 둠
+  const getPositionRef = useRef(getRecordingPosition);
+  useEffect(() => {
+    getPositionRef.current = getRecordingPosition;
+  });
+
   useEffect(() => {
     if (!enabled || !stream) return undefined;
 
@@ -34,6 +51,10 @@ export const useAudioStream = ({ meetingId, enabled, stream }) => {
     let source = null;
     let recorder = null;
     let silentOutput = null;
+    // 한 번이라도 연결됐는지 (첫 연결 전 소리는 버림)
+    let hasOpened = false;
+    // 끊긴 동안 모은 청크: { offsetMs, data }
+    let buffer = [];
 
     const connect = () => {
       const token = getMeetingSession(meetingId)?.accessToken;
@@ -46,16 +67,22 @@ export const useAudioStream = ({ meetingId, enabled, stream }) => {
 
       socket.onopen = () => {
         attempt = 0;
+        const startOffsetMs =
+          hasOpened && buffer.length > 0 ? buffer[0].offsetMs : null;
+        hasOpened = true;
+
         socket.send(
           JSON.stringify({
             type: 'audio.start',
             sampleRate: SAMPLE_RATE,
             encoding: 'LINEAR16',
             channels: 1,
-            // TODO: 다시 연결할 때 로컬 버퍼 첫 청크의 녹음 위치
-            startOffsetMs: null,
+            startOffsetMs,
           }),
         );
+        // 끊긴 동안 모은 소리를 먼저 보내고, 이어서 실시간 소리
+        buffer.forEach((chunk) => socket.send(chunk.data));
+        buffer = [];
       };
 
       socket.onclose = (event) => {
@@ -87,7 +114,21 @@ export const useAudioStream = ({ meetingId, enabled, stream }) => {
         .connect(context.destination);
 
       recorder.port.onmessage = (event) => {
-        if (socket?.readyState === WebSocket.OPEN) socket.send(event.data);
+        if (socket?.readyState === WebSocket.OPEN) {
+          socket.send(event.data);
+          return;
+        }
+        // 한 번 연결된 뒤 끊긴 동안만, 진행 중일 때만 모음
+        if (!hasOpened) return;
+        const position = getPositionRef.current?.();
+        if (!position?.isRecording) return;
+
+        // 청크는 방금까지의 200ms라 시작 위치는 지금 위치 - 200ms
+        buffer.push({
+          offsetMs: Math.max(0, Math.round(position.offsetMs - CHUNK_MS)),
+          data: event.data,
+        });
+        if (buffer.length > MAX_BUFFER_CHUNKS) buffer.shift();
       };
 
       connect();

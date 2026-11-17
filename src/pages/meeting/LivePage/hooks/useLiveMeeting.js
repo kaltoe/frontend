@@ -556,10 +556,28 @@ export const useLiveMeeting = (meetingId) => {
   // 대기 중에는 연결하지 않음
   const isStarted =
     meeting?.status === 'IN_PROGRESS' || meeting?.status === 'PAUSED';
+  // 지금 녹음 위치 = 회의 경과 시간(일시 정지 제외, 헤더 녹음 시간과 같음)
+  // 끊긴 동안 모은 소리의 위치를 정할 때 씀
+  const timerRef = useRef(null);
+  useEffect(() => {
+    timerRef.current = meeting?.timer ?? null;
+  });
+  const getRecordingPosition = useCallback(() => {
+    const timer = timerRef.current;
+    if (!timer) return null;
+    const isRecording = timer.status === 'IN_PROGRESS';
+    const passedMs = isRecording ? Date.now() - timer.receivedAt : 0;
+    return {
+      offsetMs: timer.totalElapsedSeconds * 1000 + passedMs,
+      isRecording,
+    };
+  }, []);
+
   useAudioStream({
     meetingId,
     enabled: !USE_MOCK && isStarted,
     stream: micStream,
+    getRecordingPosition,
   });
 
   // 회의 종료 요청 중 (진행자 버튼 모두 막음)
@@ -586,7 +604,8 @@ export const useLiveMeeting = (meetingId) => {
     }
   }, [meetingId, navigate, handleControlError]);
 
-  // TODO: 실제 마이크 켜고 끄기 + WS-01 mic.status 전송
+  // 마이크 버튼: 내 마이크 상태만 ON ↔ OFF로 바꿈
+  // 실제 마이크 트랙 끄기·켜기와 WS-01 mic.status 전송은 micState가 바뀌면 위 effect가 처리
   const toggleMic = useCallback(() => {
     setMeeting((prev) => ({
       ...prev,
