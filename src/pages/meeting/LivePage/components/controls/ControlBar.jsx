@@ -44,20 +44,22 @@ const getPauseIcon = (isPaused, disabled) => {
 // 하단 컨트롤 바
 // 진행자: 모두 사용 가능
 // 참여자: 대면이면 모두 비활성화, 비대면이면 마이크만
+// isEnding: 회의 종료 요청 중이면 일시 정지·다음 안건·종료를 모두 막음 (#27, #40)
 export const ControlBar = ({
   isHost,
   isMicOn,
   canUseMic,
   isPaused,
   isLastAgenda,
+  isEnding = false,
   onMicToggle,
   onPauseToggle,
   onNext,
   onEnd,
 }) => {
-  const isPauseDisabled = !isHost;
-  const isNextDisabled = !isHost || isLastAgenda;
-  const isEndDisabled = !isHost;
+  const isPauseDisabled = !isHost || isEnding;
+  const isNextDisabled = !isHost || isLastAgenda || isEnding;
+  const isEndDisabled = !isHost || isEnding;
 
   return (
     <nav className={styles.bar} aria-label="회의 진행 버튼">

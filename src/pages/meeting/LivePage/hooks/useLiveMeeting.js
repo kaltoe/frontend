@@ -1,6 +1,12 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getMeetingState } from '@/api/meeting';
+import {
+  endMeeting,
+  getMeetingState,
+  nextAgenda,
+  pauseMeeting,
+  resumeMeeting,
+} from '@/api/meeting';
 import { getMeetingSession } from '@/utils/meetingSession';
 import { mockMeeting } from '../mockMeeting';
 
@@ -49,6 +55,68 @@ const toLiveMeeting = (data, session) => ({
   partialTranscript: null,
   timer: { ...data.timer, receivedAt: Date.now() },
 });
+
+const replaceTimer = (prev, currentTimer, status) => ({
+  ...prev,
+  status,
+  timer: {
+    ...prev.timer,
+    status,
+    totalElapsedSeconds: currentTimer.totalElapsedSeconds,
+    agendaElapsedSeconds: currentTimer.agendaElapsedSeconds,
+    receivedAt: Date.now(),
+  },
+});
+
+// 서버가 보낸 timer로 교체 (API-05·06 응답, 이후 WebSocket 이벤트)
+const applyServerTimer = (prev, serverTimer) => ({
+  ...prev,
+  status: serverTimer.status,
+  timer: { ...serverTimer, receivedAt: Date.now() },
+});
+
+// 안건 전환 결과 반영 (API-07 응답, WS-01 agenda.changed도 같은 모양)
+const applyAgendaChange = (prev, { previousAgenda, currentAgenda, timer }) => ({
+  ...applyServerTimer(prev, timer),
+  agendas: prev.agendas.map((agenda) => {
+    if (agenda.agendaId === previousAgenda.agendaId) {
+      return {
+        ...agenda,
+        status: 'DONE',
+        actualSeconds: previousAgenda.actualSeconds,
+      };
+    }
+    if (agenda.agendaId === currentAgenda.agendaId) {
+      return { ...agenda, status: 'IN_PROGRESS' };
+    }
+    return agenda;
+  }),
+  transcripts: [],
+  partialTranscript: null,
+});
+
+// 목업용(나중에 지움)
+const toMockAgendaChange = (prev, currentTimer) => {
+  const index = prev.agendas.findIndex(
+    (agenda) => agenda.agendaId === currentTimer.currentAgendaId,
+  );
+  const next = prev.agendas[index + 1];
+  return {
+    previousAgenda: {
+      agendaId: currentTimer.currentAgendaId,
+      actualSeconds: currentTimer.agendaElapsedSeconds,
+    },
+    currentAgenda: next,
+    timer: {
+      ...prev.timer,
+      status: 'IN_PROGRESS',
+      totalElapsedSeconds: currentTimer.totalElapsedSeconds,
+      currentAgendaId: next.agendaId,
+      agendaAllocatedSeconds: next.allocatedSeconds,
+      agendaElapsedSeconds: 0,
+    },
+  };
+};
 
 // API-04로 회의 상태를 불러오고, 이후 WebSocket 이벤트의 timer로 스냅샷 교체
 export const useLiveMeeting = (meetingId) => {
@@ -105,19 +173,6 @@ export const useLiveMeeting = (meetingId) => {
     };
   }, [meetingId, navigate]);
 
-  // 시간을 새 스냅샷으로 고정
-  const replaceTimer = (prev, currentTimer, status) => ({
-    ...prev,
-    status,
-    timer: {
-      ...prev.timer,
-      status,
-      totalElapsedSeconds: currentTimer.totalElapsedSeconds,
-      agendaElapsedSeconds: currentTimer.agendaElapsedSeconds,
-      receivedAt: Date.now(),
-    },
-  });
-
   // 진행자 [회의 시작]
   // TODO: API-19 POST /meetings/{meetingId}/start → 응답 data.timer 적용
   //       409(이미 시작)면 에러 없이 API-04로 다시 불러와 화면만 맞춤
@@ -132,15 +187,123 @@ export const useLiveMeeting = (meetingId) => {
     });
   }, []);
 
-  // TODO: API-05 POST /meetings/{meetingId}/pause → 응답 data.timer 적용
-  const pause = useCallback((currentTimer) => {
-    setMeeting((prev) => replaceTimer(prev, currentTimer, 'PAUSED'));
-  }, []);
+  const syncMeeting = useCallback(async () => {
+    try {
+      const data = await getMeetingState(meetingId);
+      if (data.status === 'ENDED') {
+        navigate(`/result/${meetingId}`, { replace: true });
+        return;
+      }
+      setMeeting(toLiveMeeting(data, getMeetingSession(meetingId)));
+    } catch (error) {
+      if (error.response?.status === 401) {
+        navigate(`/m/${meetingId}`, { replace: true });
+      }
+    }
+  }, [meetingId, navigate]);
 
-  // TODO: API-06 POST /meetings/{meetingId}/resume → 응답 data.timer 적용
-  const resume = useCallback((currentTimer) => {
-    setMeeting((prev) => replaceTimer(prev, currentTimer, 'IN_PROGRESS'));
-  }, []);
+  // 진행자 제어(일시 정지·재개·안건 전환) 요청 중에는 다시 누르지 않게 막음 (여러 번 눌림 방지)
+  const isControlRequestingRef = useRef(false);
+
+  // 진행자 제어 요청이 실패하면 알림 없이 서버 상태에 맞춤
+  // - 401: 토큰 만료 → 참여 페이지
+  // - 410 MEETING_ENDED: 끝난 회의 → 결과 화면
+  // - 409(이미 정지됨, AGENDA_CHANGED, LAST_AGENDA 등)·그 밖의 오류: API-04로 다시 불러옴
+  const handleControlError = useCallback(
+    async (error) => {
+      const errorStatus = error.response?.status;
+      if (errorStatus === 401) {
+        navigate(`/m/${meetingId}`, { replace: true });
+      } else if (errorStatus === 410) {
+        navigate(`/result/${meetingId}`, { replace: true });
+      } else {
+        await syncMeeting();
+      }
+    },
+    [meetingId, navigate, syncMeeting],
+  );
+
+  // 누르는 즉시 화면에 반영하고, 서버 응답 timer로 다시 맞춤
+  const requestTimerChange = useCallback(
+    async (status, currentTimer, request) => {
+      if (isControlRequestingRef.current) return;
+      setMeeting((prev) => replaceTimer(prev, currentTimer, status));
+      if (USE_MOCK) return;
+
+      isControlRequestingRef.current = true;
+      try {
+        const data = await request(meetingId);
+        setMeeting((prev) => applyServerTimer(prev, data.timer));
+      } catch (error) {
+        await handleControlError(error);
+      } finally {
+        isControlRequestingRef.current = false;
+      }
+    },
+    [meetingId, handleControlError],
+  );
+
+  // 진행자 [일시 정지] (API-05)
+  const pause = useCallback(
+    (currentTimer) => requestTimerChange('PAUSED', currentTimer, pauseMeeting),
+    [requestTimerChange],
+  );
+
+  // 진행자 [재생] (API-06)
+  const resume = useCallback(
+    (currentTimer) =>
+      requestTimerChange('IN_PROGRESS', currentTimer, resumeMeeting),
+    [requestTimerChange],
+  );
+
+  // 진행자 [다음 안건] → 확인 모달 [전환] (API-07)
+  // 끝난 안건의 실제 소요 시간은 서버가 계산하므로 응답을 받은 뒤 반영
+  const goToNextAgenda = useCallback(
+    async (currentTimer) => {
+      if (isControlRequestingRef.current) return;
+      if (USE_MOCK) {
+        setMeeting((prev) =>
+          applyAgendaChange(prev, toMockAgendaChange(prev, currentTimer)),
+        );
+        return;
+      }
+
+      isControlRequestingRef.current = true;
+      try {
+        const data = await nextAgenda(meetingId, currentTimer.currentAgendaId);
+        setMeeting((prev) => applyAgendaChange(prev, data));
+      } catch (error) {
+        await handleControlError(error);
+      } finally {
+        isControlRequestingRef.current = false;
+      }
+    },
+    [meetingId, handleControlError],
+  );
+
+  // 회의 종료 요청 중 (진행자 버튼 모두 막음)
+  const [isEnding, setIsEnding] = useState(false);
+
+  // 진행자 [종료] → 확인 모달 [확인] (API-08)
+  const end = useCallback(async () => {
+    if (isControlRequestingRef.current) return;
+    if (USE_MOCK) {
+      navigate(`/result/${meetingId}`, { replace: true });
+      return;
+    }
+
+    isControlRequestingRef.current = true;
+    setIsEnding(true);
+    try {
+      await endMeeting(meetingId);
+      navigate(`/result/${meetingId}`, { replace: true });
+    } catch (error) {
+      setIsEnding(false);
+      await handleControlError(error);
+    } finally {
+      isControlRequestingRef.current = false;
+    }
+  }, [meetingId, navigate, handleControlError]);
 
   // TODO: 실제 마이크 켜고 끄기 + WS-01 mic.status 전송
   const toggleMic = useCallback(() => {
@@ -166,6 +329,9 @@ export const useLiveMeeting = (meetingId) => {
     start,
     pause,
     resume,
+    goToNextAgenda,
+    end,
+    isEnding,
     toggleMic,
     closeOfftopic,
     dismissOfftopic,
