@@ -58,5 +58,5 @@ export const useMeetingResult = (meetingId, readOnly) => {
     setRequestKey((key) => key + 1);
   };
 
-  return { meeting, hasError, retry };
+  return { meeting, hasError, retry, isMock };
 };
