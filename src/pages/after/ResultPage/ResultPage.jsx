@@ -14,13 +14,14 @@ import { ResultTabs } from './components/ResultTabs';
 import { ScriptTab } from './components/ScriptTab';
 import { SummaryTab } from './components/SummaryTab';
 import { TimerRing } from './components/TimerRing';
-import { RESULT_TABS, SUMMARY_STATUS } from './constants';
+import { RESULT_TABS } from './constants';
 import { formatDate } from './formatResult';
 import { getSummaryText } from './getSummaryText';
 import { getTimeResult } from './getTimeResult';
 import styles from './ResultPage.module.scss';
 import { useAudioPlayer } from './useAudioPlayer';
 import { useMeetingResult } from './useMeetingResult';
+import { useMeetingSummary } from './useMeetingSummary';
 
 // readOnly: 공유 링크로 들어온 화면. 공유 버튼 없이 볼 수 있는 기한을 알려준다.
 export const ResultPage = ({ readOnly = false }) => {
@@ -61,15 +62,23 @@ const ResultLoader = ({ meetingId, readOnly }) => {
     );
   }
 
-  return <ResultContent meeting={result.meeting} readOnly={readOnly} />;
+  return (
+    <ResultContent
+      meetingId={meetingId}
+      meeting={result.meeting}
+      readOnly={readOnly}
+      isMock={result.isMock}
+    />
+  );
 };
 
-const ResultContent = ({ meeting, readOnly }) => {
+const ResultContent = ({ meetingId, meeting, readOnly, isMock }) => {
   // 네트워크가 끊기면 본문 대신 로딩 화면을 보여주고, 다시 연결되면 돌아온다.
   const isOnline = useOnlineStatus();
   const [tab, setTab] = useState(RESULT_TABS[0].value);
 
-  const [summaryStatus, setSummaryStatus] = useState(meeting.summaryStatus);
+  // API-11 안건별 3줄 요약 (만드는 중이면 3초마다 다시 확인)
+  const summary = useMeetingSummary(meetingId, meeting.agendas, isMock);
   // 다시 복사하면 토스트를 새로 띄워 닫히는 시간을 처음부터 센다.
   const [copyToastKey, setCopyToastKey] = useState(null);
   const [scriptHighlight, setScriptHighlight] = useState(null);
@@ -82,8 +91,7 @@ const ResultContent = ({ meeting, readOnly }) => {
   const closeCopyToast = useCallback(() => setCopyToastKey(null), []);
 
   const handleRetrySummary = () => {
-    // TODO: 요약 재생성 API 연동
-    setSummaryStatus(SUMMARY_STATUS.PENDING);
+    // TODO: 요약 다시 생성 API(API-12) 연동
   };
 
   const copyText = async (text) => {
@@ -95,7 +103,7 @@ const ResultContent = ({ meeting, readOnly }) => {
     }
   };
 
-  const handleCopySummary = () => copyText(getSummaryText(meeting.agendas));
+  const handleCopySummary = () => copyText(getSummaryText(summary.agendas));
 
   // 누른 안건·발화의 시작 시점으로 녹음을 옮겨 재생한다.
   const handleSelectScript = (target, seconds) => {
@@ -160,7 +168,8 @@ const ResultContent = ({ meeting, readOnly }) => {
             {tab === 'summary' && (
               <SummaryTab
                 meeting={meeting}
-                status={summaryStatus}
+                agendas={summary.agendas}
+                status={summary.status}
                 onRetry={handleRetrySummary}
                 onCopy={handleCopySummary}
               />

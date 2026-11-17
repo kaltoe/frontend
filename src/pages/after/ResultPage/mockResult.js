@@ -1,6 +1,6 @@
 // 아직 연동하지 않은 값의 임시 데이터
 // - 결과 탭 값: API-10 응답 모양. 공유 화면(API-16)을 연동하기 전까지 공유 화면에서 쓴다
-// - summary: API-11, utterances·audioUrl·recordingSeconds: API-13·14, shareCode·shareExpiresAt: API-15·16
+// - summary: API-11(공유 화면·VITE_USE_MOCK에서만), utterances·audioUrl·recordingSeconds: API-13·14, shareCode·shareExpiresAt: API-15·16
 // TODO: 위 API를 모두 연동한 뒤 삭제
 const createUtterances = (agendaId, startSeconds) =>
   [0, 15, 40, 70].map((offset, index) => ({
@@ -52,7 +52,6 @@ export const mockResult = {
     },
   ],
 
-  summaryStatus: 'done',
   audioUrl: null,
   recordingSeconds: 1680,
   isScriptLocked: false,

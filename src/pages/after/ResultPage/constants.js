@@ -4,8 +4,9 @@ export const RESULT_TABS = [
   { value: 'script', label: '회의 내용' },
 ];
 
+// API-11 요약 상태
 export const SUMMARY_STATUS = {
-  DONE: 'done',
-  PENDING: 'pending',
-  FAILED: 'failed',
+  PROCESSING: 'PROCESSING',
+  DONE: 'DONE',
+  FAILED: 'FAILED',
 };

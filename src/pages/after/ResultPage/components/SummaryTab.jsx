@@ -1,12 +1,15 @@
 import { useState } from 'react';
 import { copy, loading, retry } from '@/assets';
+import { LoadingView } from '@/components/common/LoadingView/LoadingView';
 import { SUMMARY_STATUS } from '../constants';
 import { MeetingInfoCard } from './MeetingInfoCard';
 import { SummaryItem } from './SummaryItem';
 import styles from './SummaryTab.module.scss';
 
-export const SummaryTab = ({ meeting, status, onRetry, onCopy }) => {
-  const [openIds, setOpenIds] = useState(() => [meeting.agendas[0]?.id]);
+// agendas: 안건마다 summary(요약 줄 목록)를 붙인 목록
+// status: API-11 요약 상태. null이면 아직 첫 응답을 받기 전
+export const SummaryTab = ({ meeting, agendas, status, onRetry, onCopy }) => {
+  const [openIds, setOpenIds] = useState(() => [agendas[0]?.id]);
 
   const toggleItem = (id) => {
     setOpenIds((prev) =>
@@ -16,7 +19,9 @@ export const SummaryTab = ({ meeting, status, onRetry, onCopy }) => {
     );
   };
 
-  if (status === SUMMARY_STATUS.PENDING) {
+  if (status === null) return <LoadingView />;
+
+  if (status === SUMMARY_STATUS.PROCESSING) {
     return (
       <div className={styles.status} role="status">
         <img className={styles.spinner} src={loading} alt="" />
@@ -55,7 +60,7 @@ export const SummaryTab = ({ meeting, status, onRetry, onCopy }) => {
       </div>
 
       <ol className={styles.list}>
-        {meeting.agendas.map((agenda, index) => (
+        {agendas.map((agenda, index) => (
           <SummaryItem
             key={agenda.id}
             order={index + 1}
