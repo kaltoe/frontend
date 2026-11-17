@@ -131,6 +131,19 @@ const closeOfftopicEvent = (prev, eventId) =>
     ? { ...prev, activeOfftopicEvent: null }
     : prev;
 
+// 참가자 목록에서 해당 참가자의 정보를 바꿈 (목록에 없으면 추가)
+const upsertParticipant = (participants = [], participantId, changes) => {
+  const exists = participants.some(
+    (participant) => participant.participantId === participantId,
+  );
+  if (!exists) return [...participants, { participantId, ...changes }];
+  return participants.map((participant) =>
+    participant.participantId === participantId
+      ? { ...participant, ...changes }
+      : participant,
+  );
+};
+
 // 안건 전환 결과 반영 (API-07 응답, WS-01 agenda.changed도 같은 모양)
 const applyAgendaChange = (prev, { previousAgenda, currentAgenda, timer }) => ({
   ...applyServerTimer(prev, timer),
@@ -389,6 +402,46 @@ export const useLiveMeeting = (meetingId) => {
           break;
         case 'offtopic.status': // 사담 판정 OK | ERROR
           setMeeting((prev) => ({ ...prev, offtopicStatus: data.state }));
+          break;
+
+        // connectedCount: 지금 접속 중인 참가자 수 (같은 사람이 여러 기기로 들어와도 1명)
+        case 'participant.joined': // 참가자의 첫 연결 때만 옴
+          setMeeting((prev) => ({
+            ...prev,
+            connectedCount: data.connectedCount,
+            participants: upsertParticipant(
+              prev.participants,
+              data.participantId,
+              { name: data.name, role: data.role, isConnected: true },
+            ),
+          }));
+          break;
+        case 'participant.left': // 참가자의 마지막 연결이 끊길 때만 옴
+          setMeeting((prev) => ({
+            ...prev,
+            connectedCount: data.connectedCount,
+            participants: upsertParticipant(
+              prev.participants,
+              data.participantId,
+              { isConnected: false },
+            ),
+          }));
+          break;
+        // 마이크 상태 변경.
+        case 'participant.updated':
+          setMeeting((prev) => ({
+            ...prev,
+            participants: upsertParticipant(
+              prev.participants,
+              data.participantId,
+              { micState: data.micState },
+            ),
+          }));
+          break;
+
+        // 녹음 상태: RECORDING | INTERRUPTED | PAUSED
+        case 'recording.status':
+          setMeeting((prev) => ({ ...prev, recording: data }));
           break;
         default:
           break;
