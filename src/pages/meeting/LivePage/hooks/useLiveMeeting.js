@@ -12,6 +12,7 @@ import {
 import { clearMeetingSession, getMeetingSession } from '@/utils/meetingSession';
 import { mockMeeting } from '../mockMeeting';
 import { useMeetingSocket } from './useMeetingSocket';
+import { useMicrophone } from './useMicrophone';
 
 const USE_MOCK =
   import.meta.env.DEV && import.meta.env.VITE_USE_MOCK === 'true';
@@ -248,7 +249,11 @@ export const useLiveMeeting = (meetingId) => {
         navigate(`/result/${meetingId}`, { replace: true });
         return;
       }
-      setMeeting(toLiveMeeting(data, getMeetingSession(meetingId)));
+      setMeeting((prev) => {
+        const next = toLiveMeeting(data, getMeetingSession(meetingId));
+        if (!prev) return next;
+        return { ...next, me: { ...next.me, micState: prev.me.micState } };
+      });
     } catch (error) {
       if (error.response?.status === 401) {
         navigate(`/m/${meetingId}`, { replace: true });
@@ -492,6 +497,27 @@ export const useLiveMeeting = (meetingId) => {
     onEvent: handleSocketEvent,
     onOpen: handleSocketOpen,
     onClose: handleSocketClose,
+  });
+
+  // 마이크 권한 (대기 화면에서 요청)
+  // - 거부: 내 마이크 상태를 DENIED로 (진행자면 자동 일시 정지, 권한 토스트)
+  // - 허용: 권한이 없던 상태였으면 ON으로.
+  const handleMicPermission = useCallback((permission) => {
+    setMeeting((prev) => {
+      if (!prev) return prev;
+      const { micState } = prev.me;
+      let nextMicState = micState;
+      if (permission === 'denied') nextMicState = 'DENIED';
+      else if (micState === 'DENIED') nextMicState = 'ON';
+      if (nextMicState === micState) return prev;
+      return { ...prev, me: { ...prev.me, micState: nextMicState } };
+    });
+  }, []);
+
+  // TODO: 반환하는 stream을 음성 송출(WS-02)에 연결
+  useMicrophone({
+    enabled: !USE_MOCK && meeting !== null,
+    onPermissionChange: handleMicPermission,
   });
 
   // 회의 종료 요청 중 (진행자 버튼 모두 막음)
