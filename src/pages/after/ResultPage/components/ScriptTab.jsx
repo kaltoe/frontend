@@ -8,7 +8,7 @@ import styles from './ScriptTab.module.scss';
 
 // transcripts: API-14 전체 기록 ({ status, groups, retry })
 //   groups: 안건별 발화 [{ id, title, startSeconds, utterances: [{ id, startSeconds, speaker, text }] }]
-// highlight: 마지막으로 누른 안건 또는 발화 ({ type: 'agenda' | 'utterance', id })
+// highlight: 재생 중인(재생 전이면 마지막으로 누른) 안건 또는 발화 ({ type: 'agenda' | 'utterance', id })
 // isLocked: 회의 후 1주일이 지나 결제 전까지 회의 내용을 가린다.
 export const ScriptTab = ({
   meeting,
