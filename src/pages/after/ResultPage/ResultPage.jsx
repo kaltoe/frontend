@@ -16,6 +16,7 @@ import { SummaryTab } from './components/SummaryTab';
 import { TimerRing } from './components/TimerRing';
 import { RESULT_TABS } from './constants';
 import { formatDate } from './formatResult';
+import { getPlayingScript } from './getPlayingScript';
 import { getSummaryText } from './getSummaryText';
 import { getTimeResult } from './getTimeResult';
 import { isScriptLockPassed } from './scriptLock';
@@ -164,6 +165,26 @@ const ResultContent = ({ meetingId, shareId, meeting, readOnly, isMock }) => {
     player.play();
   };
 
+  // 녹음을 재생하거나 위치를 옮긴 뒤에는 재생 위치의 발화(첫 발화 전이면 안건)를 하이라이트한다.
+  // 같은 시각에 시작한 발화가 여럿이면 누른 발화를 그대로 둔다.
+  const getScriptHighlight = () => {
+    if (!player.isPlaying && player.currentTime === 0) return scriptHighlight;
+
+    const playing = getPlayingScript(transcripts.groups, player.currentTime);
+    if (!playing) return null;
+    if (!playing.utterance) return { type: 'agenda', id: playing.group.id };
+
+    const selected =
+      scriptHighlight?.type === 'utterance' &&
+      playing.group.utterances.find(
+        (utterance) => utterance.id === scriptHighlight.id,
+      );
+    if (selected?.startSeconds === playing.utterance.startSeconds) {
+      return scriptHighlight;
+    }
+    return { type: 'utterance', id: playing.utterance.id };
+  };
+
   const handleConfirmShare = async () => {
     setIsShareModalOpen(false);
     const result = await shareLink();
@@ -247,7 +268,7 @@ const ResultContent = ({ meetingId, shareId, meeting, readOnly, isMock }) => {
               <ScriptTab
                 meeting={meeting}
                 transcripts={transcripts}
-                highlight={scriptHighlight}
+                highlight={getScriptHighlight()}
                 isLocked={isScriptLocked}
                 onSelect={handleSelectScript}
               />
