@@ -99,6 +99,7 @@
 
 .codeGroup {
   @include flex(column, center, center, rem(4px));
+  width: 100%;
 }
 
 .code {
@@ -109,11 +110,15 @@
   white-space: nowrap;
 }
 
+// 링크가 한 줄을 넘으면 끝을 ...으로 줄임 (복사 버튼 제외)
 .url {
+  width: 100%;
+  overflow: hidden;
   font-size: $font-size-12;
   line-height: 1.5;
   color: $color-gray-500;
-  word-break: break-all;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .expiry {
