@@ -20,7 +20,7 @@ import {
 } from './constants';
 import { distributeAgendaMinutes } from './distributeAgendaMinutes';
 import { getCreateMeetingErrorMessage } from './getCreateMeetingErrorMessage';
-import { getStartBlocker } from './getStartBlocker';
+import { getAgendaTotalMinutes, getStartBlocker } from './getStartBlocker';
 import styles from './SetupPage.module.scss';
 import { toCreateMeetingPayload } from './toCreateMeetingPayload';
 import { useDragSort } from './useDragSort';
@@ -161,6 +161,9 @@ export const SetupPage = () => {
   // 목표 시간을 바꾸면 이미 등록한 안건에도 다시 나눈다
   const handleTargetTimeChange = (nextTargetTime) => {
     setTargetTime(nextTargetTime);
+    // 안건 합계와 이미 같으면 안건 시간은 그대로 둠
+    // (미설정에서 손잡이를 눌러 지금 합계를 그대로 목표 시간으로 정할 때)
+    if (nextTargetTime === getAgendaTotalMinutes(agendas)) return;
     setAgendas((prev) => distributeAgendaMinutes(prev, nextTargetTime));
   };
 
@@ -254,6 +257,7 @@ export const SetupPage = () => {
 
           <TargetTimeSlider
             value={targetTime}
+            agendaTotalMinutes={getAgendaTotalMinutes(agendas)}
             onChange={handleTargetTimeChange}
           />
 
