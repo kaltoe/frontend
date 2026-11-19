@@ -4,7 +4,7 @@
 .header {
   @include flex(row, flex-end, flex-start);
   flex-shrink: 0;
-  height: 105px;
+  height: calc(env(safe-area-inset-top) + 54px);
   padding: 0 20px 14px;
   background-color: $color-gray-white;
 }
